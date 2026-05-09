@@ -49,7 +49,7 @@ Both frontends call the same FastAPI. Supabase Auth issues the JWT — both fron
 ## Stack
 
 **Mobile** (`mobile/`):
-- Expo SDK 52 + Expo Router 4 (file-based navigation)
+- Expo SDK 54 + Expo Router 6 (file-based navigation)
 - TypeScript strict
 - NativeWind (Tailwind for React Native)
 - TanStack Query (server state)
@@ -59,7 +59,7 @@ Both frontends call the same FastAPI. Supabase Auth issues the JWT — both fron
 - Expo SecureStore (token storage)
 
 **Web back-office** (`web/`):
-- Next.js 15 App Router
+- Next.js 16 App Router
 - TypeScript strict
 - Tailwind CSS
 - TanStack Query
