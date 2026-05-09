@@ -1,0 +1,49 @@
+# Environment
+.env
+.env.local
+.env.*.local
+.env.development
+.env.staging
+.env.production
+
+# Expo / React Native
+node_modules/
+.expo/
+dist/
+web-build/
+eas-update/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+
+# Next.js
+.next/
+out/
+*.tsbuildinfo
+
+# Python / FastAPI
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+htmlcov/
+.coverage
+
+# OS
+.DS_Store
+*.swp
+*.swo
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Build artifacts
+build/
+coverage/
