@@ -1,0 +1,9 @@
+import { Text, View } from "react-native";
+
+export default function ClientHome() {
+  return (
+    <View className="flex-1 items-center justify-center bg-white">
+      <Text className="text-navy-900 text-xl font-semibold">Client Dashboard</Text>
+    </View>
+  );
+}
