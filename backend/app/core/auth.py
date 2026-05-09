@@ -41,6 +41,8 @@ def verify_token(token: str) -> dict:
         raise AuthError(f"Invalid token: {exc}") from exc
 
     user_id: str = payload.get("sub", "")
+    if not user_id:
+        raise AuthError("Token missing sub claim")
     raw_role: str = payload.get("user_metadata", {}).get("active_role", "")
 
     try:
