@@ -23,7 +23,8 @@ Full deal creation flow from partner mobile app: SIREN entry → company enrichm
 5 new tables added in a single migration `002_phase3_deal_creation.py`:
 
 **`quotes`**
-- `id`, `deal_id` (FK deals), `supplier_name`, `quote_number`
+- `id`, `deal_id` (FK deals), `document_id` nullable (FK documents.id — source PDF du devis)
+- `supplier_name`, `quote_number`
 - `amount_excl_tax_cents`, `amount_incl_tax_cents`, `currency`
 - `category`, `extraction_status` (pending/done/failed), `extraction_payload_json`
 - `created_at`, `updated_at`
@@ -72,21 +73,23 @@ HTTP status codes: 200 GET/PATCH success, 201 POST creation, 400 validation, 401
 
 **`/deals`**
 ```
-POST   /deals                          → create deal (status: draft)
+POST   /deals                          → create deal: accepts company_id, triggers draft → company_enriched
+                                          idempotency: Idempotency-Key header (UUID from mobile),
+                                          duplicate key within 24h returns existing deal (200, not 201)
 GET    /deals                          → list deals (scoped to org, paginated)
 GET    /deals/{deal_id}                → get deal detail
 PATCH  /deals/{deal_id}                → update deal fields
 POST   /deals/{deal_id}/submit         → transition: indicative_offer_ready → submitted
 POST   /deals/{deal_id}/status         → explicit status transition (internal use)
-GET    /deals/{deal_id}/timeline       → audit events for deal
+GET    /deals/{deal_id}/timeline       → stub Phase 4-ready: returns [] in Phase 3, wired to audit_events in Phase 4
 ```
 
 **`/companies`**
 ```
 POST   /companies/enrich               → mock Pappers enrichment by SIREN/SIRET
 GET    /companies/{company_id}         → get enriched company
-POST   /deals/{deal_id}/company        → link company to deal (triggers company_enriched transition)
 ```
+Note: `POST /deals/{deal_id}/company` removed — deal creation and company linking are unified in `POST /deals` (single flow, no ambiguity).
 
 **`/quotes`** (nested under deals)
 ```
@@ -182,7 +185,7 @@ mobile/app/(partner)/deals/new/
   offer.tsx        ← SCR-PARTNER-006 : indicative offer + submit
 ```
 
-Deal created at SCR-004 confirm (POST /deals). `deal_id` flows via Zustand `useDealCreationStore`.
+Deal created at SCR-004 confirm (`POST /deals` with `company_id` + `Idempotency-Key` header — UUID generated once and stored in the store). `deal_id` flows via Zustand `useDealCreationStore`. Back navigation never re-POSTs: `dealId` already set in store → uses existing deal.
 
 ### State
 
@@ -226,7 +229,7 @@ TanStack Query hooks: `useEnrichCompany`, `useCreateDeal`, `useUploadQuote`, `us
 - On submit: `POST /deals/{id}/pricing/recalculate` (saves + triggers indicative_offer_ready) then `POST /deals/{id}/submit`
 - Display: amount financed, duration, monthly payment, rate, assumptions
 - Risk band badge: green/orange/red with short explanation
-- Disclaimer: "Accord indicatif non contractuel"
+- Disclaimer: "Offre indicative, sous réserve d'analyse du dossier et validation par un partenaire financeur."
 - CTA `Soumettre le dossier`: `POST /deals/{id}/submit` → redirect to partner dashboard + success toast
 - Store reset on success
 
@@ -258,6 +261,7 @@ backend → saves record, returns document
 - [ ] PricingService formula unit tested with known values
 - [ ] RiskService rules unit tested independently
 - [ ] Mobile: useDealCreationStore resets on successful submission
-- [ ] Mobile: back navigation doesn't create duplicate deals
+- [ ] POST /deals is idempotent via Idempotency-Key header (duplicate within 24h returns existing deal)
+- [ ] Mobile: useDealCreationStore generates idempotency key once per wizard session, never re-POSTs if dealId already set
 - [ ] Documents upload via signed URL (never proxied through backend)
 - [ ] No storage_key exposed in any API response to frontend
