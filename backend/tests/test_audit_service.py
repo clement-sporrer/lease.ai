@@ -72,3 +72,25 @@ async def test_get_timeline_returns_events():
 
     result = await audit_service.get_timeline(db, deal_id)
     assert result == events
+
+    stmt = db.execute.call_args[0][0]
+    whereclause = str(stmt.whereclause.compile(compile_kwargs={"literal_binds": True}))
+    # SQLAlchemy renders UUIDs without dashes in literal binds
+    assert str(deal_id).replace("-", "") in whereclause
+
+
+@pytest.mark.asyncio
+async def test_log_with_none_actor_id():
+    db = AsyncMock()
+    await audit_service.log(
+        db=db,
+        deal_id=uuid.uuid4(),
+        actor_id=None,
+        actor_role="system",
+        action="status_transition",
+        payload={"from": "submitted", "to": "internal_review"},
+    )
+    db.flush.assert_called_once()
+    db.commit.assert_not_called()
+    event = db.add.call_args[0][0]
+    assert event.actor_id is None

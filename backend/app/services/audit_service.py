@@ -10,13 +10,12 @@ from app.models.audit_event import AuditEvent
 async def log(
     db: AsyncSession,
     deal_id: uuid.UUID,
-    actor_id: uuid.UUID,
+    actor_id: uuid.UUID | None,
     actor_role: str,
     action: str,
     payload: dict[str, Any] | None = None,
 ) -> AuditEvent:
     event = AuditEvent(
-        id=uuid.uuid4(),
         deal_id=deal_id,
         actor_id=actor_id,
         actor_role=actor_role,
