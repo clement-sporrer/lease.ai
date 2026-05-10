@@ -151,3 +151,98 @@ async def test_reject_document_surfaces_reason_required(make_token, test_ec_key)
                 )
     assert response.status_code == 422
     assert response.json()["error"]["code"] == "REASON_REQUIRED"
+
+
+# ─── auto-transition service-level tests ────────────────────────────────────
+
+@pytest.mark.asyncio
+async def test_confirm_upload_and_maybe_resume_review_transitions_when_missing_documents():
+    from unittest.mock import AsyncMock, MagicMock, patch
+    from app.services import document_service, audit_service
+    from app.models.deal import Deal
+    from app.models.document import Document
+
+    deal_id = uuid.uuid4()
+    document_id = uuid.uuid4()
+    actor_id = uuid.uuid4()
+
+    fake_doc = MagicMock(spec=Document)
+    fake_doc.id = document_id
+    fake_doc.deal_id = deal_id
+
+    fake_deal = MagicMock(spec=Deal)
+    fake_deal.id = deal_id
+    fake_deal.status = "missing_documents"
+
+    deal_result = MagicMock()
+    deal_result.scalar_one_or_none.return_value = fake_deal
+
+    db = AsyncMock()
+    db.execute.return_value = deal_result
+
+    with patch.object(document_service, "confirm_upload", new_callable=AsyncMock, return_value=fake_doc):
+        with patch.object(audit_service, "log", new_callable=AsyncMock) as mock_log:
+            result = await document_service.confirm_upload_and_maybe_resume_review(
+                db=db,
+                deal_id=deal_id,
+                document_id=document_id,
+                file_name="doc.pdf",
+                mime_type="application/pdf",
+                size_bytes=1024,
+                document_type="rib",
+                actor_id=actor_id,
+                actor_role="partner",
+            )
+
+    assert result is fake_doc
+    assert fake_deal.status == "internal_review"
+    mock_log.assert_called_once()
+    log_kwargs = mock_log.call_args.kwargs
+    assert log_kwargs["action"] == "status_transition"
+    assert log_kwargs["payload"]["from"] == "missing_documents"
+    db.commit.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_confirm_upload_and_maybe_resume_review_no_transition_when_not_missing_documents():
+    from unittest.mock import AsyncMock, MagicMock, patch
+    from app.services import document_service, audit_service
+    from app.models.deal import Deal
+    from app.models.document import Document
+
+    deal_id = uuid.uuid4()
+    document_id = uuid.uuid4()
+    actor_id = uuid.uuid4()
+
+    fake_doc = MagicMock(spec=Document)
+    fake_doc.id = document_id
+    fake_doc.deal_id = deal_id
+
+    fake_deal = MagicMock(spec=Deal)
+    fake_deal.id = deal_id
+    fake_deal.status = "internal_review"  # NOT missing_documents
+
+    deal_result = MagicMock()
+    deal_result.scalar_one_or_none.return_value = fake_deal
+
+    db = AsyncMock()
+    db.execute.return_value = deal_result
+
+    with patch.object(document_service, "confirm_upload", new_callable=AsyncMock, return_value=fake_doc):
+        with patch.object(audit_service, "log", new_callable=AsyncMock) as mock_log:
+            result = await document_service.confirm_upload_and_maybe_resume_review(
+                db=db,
+                deal_id=deal_id,
+                document_id=document_id,
+                file_name="doc.pdf",
+                mime_type="application/pdf",
+                size_bytes=1024,
+                document_type="rib",
+                actor_id=actor_id,
+                actor_role="partner",
+            )
+
+    assert result is fake_doc
+    assert fake_deal.status == "internal_review"  # unchanged
+    mock_log.assert_not_called()
+    db.commit.assert_not_called()
