@@ -55,8 +55,8 @@ export default function LoginScreen() {
       }
 
       const rawRole = data.session?.user?.user_metadata?.active_role
-      if (isKnownRole(rawRole) && rawRole === 'partner_user') router.replace('/(partner)/')
-      else if (isKnownRole(rawRole) && rawRole === 'client_user') router.replace('/(client)/')
+      if (isKnownRole(rawRole) && rawRole === 'partner_user') router.replace('/(partner)')
+      else if (isKnownRole(rawRole) && rawRole === 'client_user') router.replace('/(client)')
       else setErrors({ root: 'Aucun rôle assigné. Contactez votre administrateur.' })
     } finally {
       setIsSubmitting(false)

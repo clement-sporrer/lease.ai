@@ -32,8 +32,8 @@ export default function RootLayout() {
     }
     const rawRole = session.user.user_metadata?.active_role
     const role = isKnownRole(rawRole) ? rawRole : null
-    if (role === 'partner_user') router.replace('/(partner)/')
-    else if (role === 'client_user') router.replace('/(client)/')
+    if (role === 'partner_user') router.replace('/(partner)')
+    else if (role === 'client_user') router.replace('/(client)')
     else router.replace('/(auth)/login')
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, session])
