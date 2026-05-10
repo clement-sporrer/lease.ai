@@ -1,0 +1,44 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"],
+      "description": "Documentation FastAPI, Expo, React Native, TanStack Query, Zod, etc."
+    },
+    "supabase": {
+      "url": "https://mcp.supabase.com/mcp?project_ref=conxwmnjhntbzftwgxig",
+      "transport": "http",
+      "description": "Gestion DB (migrations, schema, logs), Storage, exécution SQL"
+    },
+    "stripe": {
+      "command": "npx",
+      "args": ["-y", "@stripe/mcp-server@latest"],
+      "env": {
+        "STRIPE_SECRET_KEY": "${STRIPE_SECRET_KEY}"
+      },
+      "description": "Mandats SEPA, payment intents, webhooks Stripe"
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github@latest"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      },
+      "description": "Issues, PRs, branches, code search"
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem@latest",
+        "/Users/clementsporrer/.superset/projects/lease.ai"
+      ],
+      "description": "Accès fichiers projet — lecture/écriture dans le repo"
+    },
+    "docker": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-docker"],
+      "description": "Gestion containers Docker — local dev stack (Postgres, Redis, FastAPI)"
+    }
+  }
+}

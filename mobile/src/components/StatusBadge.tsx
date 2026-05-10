@@ -12,6 +12,9 @@ const STATUS_MAP: Record<string, StatusConfig> = {
   pre_approved: { bg: 'bg-teal-500', text: 'text-white', label: 'Pré-accordé' },
   missing_documents: { bg: 'bg-warning', text: 'text-white', label: 'Pièces manquantes' },
   active: { bg: 'bg-teal-500', text: 'text-white', label: 'ACTIF' },
+  green: { bg: 'bg-teal-500', text: 'text-white', label: 'Risque faible' },
+  orange: { bg: 'bg-warning', text: 'text-white', label: 'Risque modéré' },
+  red: { bg: 'bg-danger', text: 'text-white', label: 'Risque élevé' },
 }
 
 type StatusBadgeProps = {

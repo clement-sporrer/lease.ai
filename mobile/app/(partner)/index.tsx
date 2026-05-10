@@ -86,7 +86,7 @@ export default function PartnerDashboard() {
         <TouchableOpacity
           className="bg-blue-500 rounded-2xl py-4 items-center"
           activeOpacity={0.85}
-          onPress={() => router.push('/(partner)/new-deal' as never)}
+          onPress={() => router.push('/(partner)/deals/new' as never)}
         >
           <Text className="text-white font-semibold text-base">Nouveau dossier</Text>
         </TouchableOpacity>

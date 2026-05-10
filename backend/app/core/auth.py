@@ -21,8 +21,11 @@ class AuthError(Exception):
 
 
 def _fetch_jwks_sync() -> dict:
-    response = httpx.get(settings.jwks_url, timeout=5)
-    response.raise_for_status()
+    try:
+        response = httpx.get(settings.jwks_url, timeout=5)
+        response.raise_for_status()
+    except httpx.HTTPError as exc:
+        raise AuthError("Unable to fetch signing keys") from exc
     return response.json()
 
 
