@@ -41,7 +41,7 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.CheckConstraint(
-            f"action IN ({', '.join(repr(a) for a in _VALID_ACTIONS)})",
+            "action IN ({})".format(", ".join(f"'{a}'" for a in _VALID_ACTIONS)),
             name="chk_audit_action",
         ),
         sa.ForeignKeyConstraint(["deal_id"], ["deals.id"], ondelete="CASCADE"),
