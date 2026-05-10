@@ -63,12 +63,32 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   })
 
   const rawText = await response.text()
-  const parsed = rawText ? JSON.parse(rawText) : null
+  const contentType = response.headers.get('content-type') ?? ''
+  const isJson = contentType.includes('application/json') || contentType.includes('+json')
+  let parsed: unknown = null
+
+  if (rawText) {
+    if (isJson) {
+      try {
+        parsed = JSON.parse(rawText)
+      } catch {
+        parsed = rawText
+      }
+    } else {
+      parsed = rawText
+    }
+  }
 
   if (!response.ok) {
-    const errorBody = parsed as ApiErrorBody | null
+    const errorBody =
+      parsed && typeof parsed === 'object' ? (parsed as ApiErrorBody) : null
+    const message =
+      errorBody?.error?.message ??
+      (typeof parsed === 'string' && parsed.trim()
+        ? parsed.trim()
+        : `Request failed with status ${response.status}`)
     throw new ApiError(
-      errorBody?.error?.message ?? `Request failed with status ${response.status}`,
+      message,
       response.status,
       errorBody?.error?.code,
       errorBody?.error?.details,
@@ -79,7 +99,15 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     return (parsed as ApiEnvelope<T>).data
   }
 
-  return parsed as T
+  if (isJson || !rawText) {
+    return parsed as T
+  }
+
+  throw new ApiError(
+    `Unexpected non-JSON response from ${path}`,
+    response.status,
+    'INVALID_RESPONSE',
+  )
 }
 
 export function apiGet<T>(path: string): Promise<T> {

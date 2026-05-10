@@ -1,8 +1,11 @@
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native'
+import { Alert, View, Text, ScrollView, TouchableOpacity } from 'react-native'
 import { useRouter } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { BrandMark } from '@/src/components/BrandMark'
 import { KpiCard } from '@/src/components/KpiCard'
 import { StatusBadge } from '@/src/components/StatusBadge'
+import { supabase } from '@/src/lib/supabase'
 import { useDisplayName } from '@/src/hooks/useDisplayName'
 
 const MOCK_KPIS = { active: 7, engagement: 142000, toComplete: 3, approved: 4 }
@@ -18,6 +21,15 @@ export default function PartnerDashboard() {
   const displayName = useDisplayName('Partenaire')
   const HAS_PENDING = MOCK_KPIS.toComplete > 0
 
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      Alert.alert('Déconnexion impossible', error.message)
+      return
+    }
+    router.replace('/(auth)/login' as never)
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView
@@ -25,9 +37,25 @@ export default function PartnerDashboard() {
         contentContainerClassName="px-5 pt-6 pb-24"
         showsVerticalScrollIndicator={false}
       >
-        {/* Greeting */}
-        <Text className="text-2xl font-bold text-navy-900">Bonjour, {displayName}</Text>
-        <Text className="text-sm text-gray-500 mt-1">Tableau de bord partenaire</Text>
+        <View className="flex-row items-start justify-between gap-3">
+          <View className="flex-1">
+            <View className="flex-row items-center gap-3">
+              <BrandMark variant="mark" style={{ width: 30, height: 30 }} />
+              <View>
+                <Text className="text-2xl font-bold text-navy-900">Bonjour, {displayName}</Text>
+                <Text className="text-sm text-gray-500 mt-1">Tableau de bord partenaire</Text>
+              </View>
+            </View>
+          </View>
+          <TouchableOpacity
+            className="flex-row items-center rounded-full border border-gray-200 bg-white px-3 py-2"
+            activeOpacity={0.8}
+            onPress={handleLogout}
+          >
+            <Ionicons name="log-out-outline" size={18} color="#0D183D" />
+            <Text className="ml-2 text-sm font-medium text-navy-900">Déconnexion</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Health banner */}
         {HAS_PENDING ? (

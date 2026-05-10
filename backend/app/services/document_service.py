@@ -8,7 +8,6 @@ from app.core.config import settings
 from app.core.errors import AppError
 from app.models.document import Document
 
-_BUCKET = "documents"
 _SIGNED_URL_EXPIRES = 3600
 
 
@@ -24,7 +23,7 @@ async def create_upload_url(db: AsyncSession, deal_id: uuid.UUID, user_id: str |
     document_id = uuid.uuid4()
     storage_key = f"deals/{deal_id}/{document_id}"
 
-    url = f"{settings.supabase_url}/storage/v1/object/upload/sign/{_BUCKET}/{storage_key}"
+    url = f"{settings.supabase_url}/storage/v1/object/upload/sign/{settings.object_storage_bucket}/{storage_key}"
     headers = {
         "Authorization": f"Bearer {settings.supabase_service_role_key}",
         "apikey": settings.supabase_service_role_key,
@@ -38,10 +37,12 @@ async def create_upload_url(db: AsyncSession, deal_id: uuid.UUID, user_id: str |
     if response.status_code != 200:
         raise AppError(502, "STORAGE_URL_FAILED", "Failed to generate upload URL")
 
-    signed_url = response.json().get("signedURL", "")
-    upload_url = (
-        f"{settings.supabase_url}{signed_url}" if signed_url.startswith("/") else signed_url
-    )
+    payload = response.json()
+    signed_url = payload.get("url") or payload.get("signedURL", "")
+    if signed_url.startswith("/"):
+        upload_url = f"{settings.supabase_url}/storage/v1{signed_url}"
+    else:
+        upload_url = signed_url
 
     document = Document(
         id=document_id,

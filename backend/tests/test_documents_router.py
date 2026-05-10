@@ -51,6 +51,40 @@ async def test_upload_url_success(make_token, test_ec_key):
 
 
 @pytest.mark.asyncio
+async def test_create_upload_url_accepts_storage_url_field():
+    from unittest.mock import AsyncMock, MagicMock, patch
+
+    from app.services import document_service
+
+    deal_id = uuid.uuid4()
+    document_id = uuid.uuid4()
+    db = MagicMock()
+    db.commit = AsyncMock()
+    db.add = MagicMock()
+
+    response = MagicMock()
+    response.status_code = 200
+    response.json.return_value = {
+        "url": f"/object/upload/sign/lease-documents/deals/{deal_id}/{document_id}?token=test-token",
+        "token": "test-token",
+    }
+
+    with patch.object(document_service.settings, "supabase_url", "http://localhost:8001"):
+        with patch.object(document_service.settings, "object_storage_bucket", "lease-documents"):
+            with patch("app.services.document_service.httpx.AsyncClient") as mock_client_cls:
+                mock_client = AsyncMock()
+                mock_client.post = AsyncMock(return_value=response)
+                mock_client_cls.return_value.__aenter__.return_value = mock_client
+
+                result = await document_service.create_upload_url(db, deal_id, None)
+
+    assert result["document_id"]
+    assert result["upload_url"].startswith("http://localhost:8001/storage/v1/object/upload/sign/")
+    db.add.assert_called_once()
+    db.commit.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_confirm_upload_success(make_token, test_ec_key):
     token = make_token("00000000-0000-0000-0000-000000000001", "partner")
     deal_id = str(uuid.uuid4())

@@ -1,5 +1,9 @@
 import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+import { useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { BrandMark } from '@/src/components/BrandMark'
+import { supabase } from '@/src/lib/supabase'
 import { StatusBadge } from '@/src/components/StatusBadge'
 import { useDisplayName } from '@/src/hooks/useDisplayName'
 
@@ -21,14 +25,36 @@ const MOCK_ASSETS = [
 ]
 
 export default function ClientDashboard() {
+  const router = useRouter()
   const displayName = useDisplayName('Client')
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      Alert.alert('Déconnexion impossible', error.message)
+      return
+    }
+    router.replace('/(auth)/login' as never)
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
       {/* Header */}
       <View className="bg-navy-900 px-5 pt-4 pb-6">
-        <Text className="text-white text-xl font-bold">{displayName}</Text>
-        <Text className="text-blue-300 text-sm mt-0.5">Locataire</Text>
+        <View className="flex-row items-start justify-between gap-3">
+          <View className="flex-1">
+            <Text className="text-white text-xl font-bold">{displayName}</Text>
+            <Text className="text-blue-300 text-sm mt-0.5">Locataire</Text>
+          </View>
+          <TouchableOpacity
+            className="flex-row items-center rounded-full border border-white/15 px-3 py-2"
+            activeOpacity={0.8}
+            onPress={handleLogout}
+          >
+            <Ionicons name="log-out-outline" size={18} color="#FFFFFF" />
+            <Text className="ml-2 text-sm font-medium text-white">Déconnexion</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView
@@ -38,6 +64,7 @@ export default function ClientDashboard() {
       >
         {/* Contract status */}
         <View className="items-center mb-6">
+          <BrandMark variant="mark" style={{ width: 44, height: 44, marginBottom: 12 }} />
           <StatusBadge status="active" large />
         </View>
 
