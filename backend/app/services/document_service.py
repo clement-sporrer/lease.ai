@@ -86,3 +86,109 @@ async def confirm_upload(
     await db.commit()
     await db.refresh(document)
     return document
+
+
+async def validate_document(
+    db: AsyncSession,
+    document_id: uuid.UUID,
+    actor_id: uuid.UUID,
+    actor_role: str,
+) -> Document:
+    result = await db.execute(select(Document).where(Document.id == document_id))
+    document = result.scalar_one_or_none()
+    if document is None:
+        raise AppError(404, "DOCUMENT_NOT_FOUND", f"Document {document_id} not found")
+
+    document.status = "validated"
+    document.validated_by_user_id = actor_id
+
+    from app.services import audit_service
+
+    await audit_service.log(
+        db=db,
+        deal_id=document.deal_id,
+        actor_id=actor_id,
+        actor_role=actor_role,
+        action="document_validated",
+        payload={"document_id": str(document_id), "document_type": document.type},
+    )
+    await db.commit()
+    await db.refresh(document)
+    return document
+
+
+async def reject_document(
+    db: AsyncSession,
+    document_id: uuid.UUID,
+    actor_id: uuid.UUID,
+    actor_role: str,
+    reason: str,
+) -> Document:
+    if not reason or not reason.strip():
+        raise AppError(422, "REASON_REQUIRED", "A reason is required to reject a document")
+
+    result = await db.execute(select(Document).where(Document.id == document_id))
+    document = result.scalar_one_or_none()
+    if document is None:
+        raise AppError(404, "DOCUMENT_NOT_FOUND", f"Document {document_id} not found")
+
+    document.status = "rejected"
+
+    from app.services import audit_service
+
+    await audit_service.log(
+        db=db,
+        deal_id=document.deal_id,
+        actor_id=actor_id,
+        actor_role=actor_role,
+        action="document_rejected",
+        payload={
+            "document_id": str(document_id),
+            "document_type": document.type,
+            "reason": reason,
+        },
+    )
+    await db.commit()
+    await db.refresh(document)
+    return document
+
+
+async def confirm_upload_and_maybe_resume_review(
+    db: AsyncSession,
+    deal_id: uuid.UUID,
+    document_id: uuid.UUID,
+    file_name: str,
+    mime_type: str,
+    size_bytes: int,
+    document_type: str,
+    actor_id: uuid.UUID | None = None,
+    actor_role: str = "partner",
+) -> Document:
+    from app.models.deal import Deal
+
+    document = await confirm_upload(
+        db, deal_id, document_id, file_name, mime_type, size_bytes, document_type
+    )
+
+    deal_result = await db.execute(select(Deal).where(Deal.id == deal_id))
+    deal = deal_result.scalar_one_or_none()
+
+    if deal is not None and deal.status == "missing_documents" and actor_id is not None:
+        deal.status = "internal_review"
+        from app.services import audit_service
+
+        await audit_service.log(
+            db=db,
+            deal_id=deal_id,
+            actor_id=actor_id,
+            actor_role=actor_role,
+            action="status_transition",
+            payload={
+                "from": "missing_documents",
+                "to": "internal_review",
+                "trigger": "document_uploaded",
+            },
+        )
+        await db.commit()
+
+    return document

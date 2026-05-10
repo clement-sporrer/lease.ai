@@ -56,7 +56,7 @@ async def test_confirm_upload_success(make_token, test_ec_key):
     deal_id = str(uuid.uuid4())
     document_id = str(uuid.uuid4())
     with patch(
-        "app.routers.documents.document_service.confirm_upload",
+        "app.routers.documents.document_service.confirm_upload_and_maybe_resume_review",
         new_callable=AsyncMock,
         return_value=_fake_document(deal_id, document_id),
     ):
@@ -84,3 +84,70 @@ async def test_documents_no_auth():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.post(f"/deals/{uuid.uuid4()}/documents/upload-url")
     assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_validate_document_ops_succeeds(make_token, test_ec_key):
+    from unittest.mock import MagicMock
+
+    from app.models.document import Document as DocModel
+
+    doc_id = uuid.uuid4()
+    fake_doc = MagicMock(spec=DocModel)
+    fake_doc.id = doc_id
+    fake_doc.deal_id = uuid.uuid4()
+    fake_doc.type = "rib"
+    fake_doc.status = "validated"
+    fake_doc.file_name = "rib.pdf"
+    fake_doc.mime_type = None
+    fake_doc.size_bytes = None
+    fake_doc.version = 1
+    fake_doc.created_at = datetime.now(timezone.utc)
+
+    token = make_token(str(uuid.uuid4()), "ops")
+    with patch(
+        "app.routers.documents.document_service.validate_document",
+        new_callable=AsyncMock,
+        return_value=fake_doc,
+    ):
+        with patch("app.core.auth._get_jwks", new_callable=AsyncMock, return_value=test_ec_key["jwks"]):
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                response = await client.post(
+                    f"/documents/{doc_id}/validate",
+                    headers={"Authorization": f"Bearer {token}"},
+                )
+    assert response.status_code == 200
+    assert response.json()["data"]["status"] == "validated"
+
+
+@pytest.mark.asyncio
+async def test_validate_document_risk_forbidden(make_token, test_ec_key):
+    token = make_token(str(uuid.uuid4()), "risk")
+    with patch("app.core.auth._get_jwks", new_callable=AsyncMock, return_value=test_ec_key["jwks"]):
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            response = await client.post(
+                f"/documents/{uuid.uuid4()}/validate",
+                headers={"Authorization": f"Bearer {token}"},
+            )
+    assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_reject_document_surfaces_reason_required(make_token, test_ec_key):
+    from app.core.errors import AppError as _AppError
+
+    token = make_token(str(uuid.uuid4()), "ops")
+    with patch(
+        "app.routers.documents.document_service.reject_document",
+        new_callable=AsyncMock,
+        side_effect=_AppError(422, "REASON_REQUIRED", "reason required"),
+    ):
+        with patch("app.core.auth._get_jwks", new_callable=AsyncMock, return_value=test_ec_key["jwks"]):
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                response = await client.post(
+                    f"/documents/{uuid.uuid4()}/reject",
+                    json={"reason": ""},
+                    headers={"Authorization": f"Bearer {token}"},
+                )
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "REASON_REQUIRED"

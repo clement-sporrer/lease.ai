@@ -18,6 +18,10 @@ class DocumentConfirmRequest(BaseModel):
     document_type: str = "quote"
 
 
+class DocumentRejectRequest(BaseModel):
+    reason: str
+
+
 class DocumentResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
