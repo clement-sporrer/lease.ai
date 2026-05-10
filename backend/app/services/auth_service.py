@@ -54,6 +54,10 @@ async def login(email: str, password: str) -> dict:
     access_token: str = data.get("access_token", "")
     refresh_token: str = data.get("refresh_token", "")
     user_id: str = data.get("user", {}).get("id", "")
+
+    if not access_token or not user_id:
+        raise HTTPException(status_code=502, detail="Auth service returned incomplete response")
+
     active_role: str = _extract_active_role(access_token)
 
     return {
@@ -69,10 +73,7 @@ async def set_active_role(user_id: str, role: str) -> dict:
     try:
         UserRole(role)
     except ValueError:
-        raise HTTPException(
-            status_code=422,
-            detail=f"Invalid role '{role}'. Must be one of: {[r.value for r in UserRole]}",
-        )
+        raise HTTPException(status_code=422, detail="Invalid role value")
 
     url = f"{settings.supabase_url}/auth/v1/admin/users/{user_id}"
     headers = {

@@ -157,7 +157,7 @@ async def test_active_role_invalid_role(make_token, test_ec_key):
     """Invalid role value → 422 from service validation."""
     token = make_token("user-xyz", "partner")
 
-    with patch("app.core.auth._get_jwks", return_value=test_ec_key["jwks"]):
+    with patch("app.core.auth._get_jwks", new_callable=AsyncMock, return_value=test_ec_key["jwks"]):
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as client:
@@ -183,7 +183,7 @@ async def test_active_role_success(make_token, test_ec_key):
         new_callable=AsyncMock,
         return_value=fake_result,
     ):
-        with patch("app.core.auth._get_jwks", return_value=test_ec_key["jwks"]):
+        with patch("app.core.auth._get_jwks", new_callable=AsyncMock, return_value=test_ec_key["jwks"]):
             async with AsyncClient(
                 transport=ASGITransport(app=app), base_url="http://test"
             ) as client:
@@ -222,7 +222,7 @@ async def test_active_role_supabase_error(make_token, test_ec_key):
         new_callable=AsyncMock,
         side_effect=HTTPException(status_code=502, detail="Failed to update role"),
     ):
-        with patch("app.core.auth._get_jwks", return_value=test_ec_key["jwks"]):
+        with patch("app.core.auth._get_jwks", new_callable=AsyncMock, return_value=test_ec_key["jwks"]):
             async with AsyncClient(
                 transport=ASGITransport(app=app), base_url="http://test"
             ) as client:

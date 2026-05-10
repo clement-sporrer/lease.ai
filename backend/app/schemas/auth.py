@@ -14,6 +14,11 @@ class LoginResponse(BaseModel):
     active_role: str  # empty string if not set yet
 
 
+class MeResponse(BaseModel):
+    user_id: str
+    active_role: str | None
+
+
 class ActiveRoleRequest(BaseModel):
     role: str  # validated against UserRole in service layer
 
