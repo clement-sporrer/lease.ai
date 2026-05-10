@@ -136,12 +136,8 @@ export default function LoginScreen() {
               activeOpacity={0.85}
             >
               <Text className="text-white font-semibold text-base">
-                {isSubmitting ? 'Connexion...' : 'Se connecter'}
+                {isSubmitting ? 'Connexion...' : 'Log in'}
               </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity className="items-center mt-6" activeOpacity={0.7}>
-              <Text className="text-blue-500 text-sm">Mot de passe oublié ?</Text>
             </TouchableOpacity>
           </View>
         </View>

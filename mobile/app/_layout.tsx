@@ -1,5 +1,5 @@
 import '../global.css'
-import { Redirect, Stack } from 'expo-router'
+import { Stack, useRouter } from 'expo-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { View } from 'react-native'
@@ -9,40 +9,42 @@ import { useAuthStore } from '@/src/stores/auth'
 const queryClient = new QueryClient()
 
 export default function RootLayout() {
+  const router = useRouter()
   const { session, isLoading, setSession, setLoading, setActiveRole } = useAuthStore()
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s)
-      setActiveRole(s?.user?.user_metadata?.active_role ?? null)
+    supabase.auth.getSession().then(({ data: { session: s }, error }) => {
+      if (!error) {
+        setSession(s)
+        setActiveRole(s?.user?.user_metadata?.active_role ?? null)
+      }
       setLoading(false)
     })
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s)
       setActiveRole(s?.user?.user_metadata?.active_role ?? null)
+      setLoading(false)
     })
 
     return () => listener.subscription.unsubscribe()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  if (isLoading) {
-    return <View className="flex-1 bg-white" />
-  }
+  useEffect(() => {
+    if (isLoading) return
+    if (!session) {
+      router.replace('/(auth)/login')
+      return
+    }
+    const role = session.user.user_metadata?.active_role as string | undefined
+    if (role === 'partner_user') router.replace('/(partner)/')
+    else if (role === 'client_user') router.replace('/(client)/')
+    else router.replace('/(auth)/login')
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, session])
 
-  if (!session) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(auth)" />
-        </Stack>
-        <Redirect href="/(auth)/login" />
-      </QueryClientProvider>
-    )
-  }
-
-  const role = session.user.user_metadata?.active_role as string | undefined
+  if (isLoading) return <View className="flex-1 bg-white" />
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -51,9 +53,6 @@ export default function RootLayout() {
         <Stack.Screen name="(partner)" />
         <Stack.Screen name="(client)" />
       </Stack>
-      {role === 'partner_user' && <Redirect href="/(partner)/" />}
-      {role === 'client_user' && <Redirect href="/(client)/" />}
-      {!role && <Redirect href="/(auth)/login" />}
     </QueryClientProvider>
   )
 }
