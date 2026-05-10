@@ -11,7 +11,7 @@ import {
 import { useRouter } from 'expo-router'
 import { z } from 'zod'
 import { supabase } from '@/src/lib/supabase'
-import { isKnownRole } from '@/src/lib/roles'
+import { normalizeRole } from '@/src/lib/roles'
 
 const loginSchema = z.object({
   email: z.string().email('Email invalide'),
@@ -54,9 +54,9 @@ export default function LoginScreen() {
         return
       }
 
-      const rawRole = data.session?.user?.user_metadata?.active_role
-      if (isKnownRole(rawRole) && rawRole === 'partner_user') router.replace('/(partner)')
-      else if (isKnownRole(rawRole) && rawRole === 'client_user') router.replace('/(client)')
+      const role = normalizeRole(data.session?.user?.user_metadata?.active_role)
+      if (role === 'partner') router.replace('/(partner)')
+      else if (role === 'client') router.replace('/(client)')
       else setErrors({ root: 'Aucun rôle assigné. Contactez votre administrateur.' })
     } finally {
       setIsSubmitting(false)

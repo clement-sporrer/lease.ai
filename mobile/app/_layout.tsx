@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 import { View } from 'react-native'
 import { supabase } from '@/src/lib/supabase'
 import { useAuthStore } from '@/src/stores/auth'
-import { isKnownRole } from '@/src/lib/roles'
+import { normalizeRole } from '@/src/lib/roles'
 
 const queryClient = new QueryClient()
 
@@ -30,10 +30,9 @@ export default function RootLayout() {
       router.replace('/(auth)/login')
       return
     }
-    const rawRole = session.user.user_metadata?.active_role
-    const role = isKnownRole(rawRole) ? rawRole : null
-    if (role === 'partner_user') router.replace('/(partner)')
-    else if (role === 'client_user') router.replace('/(client)')
+    const role = normalizeRole(session.user.user_metadata?.active_role)
+    if (role === 'partner') router.replace('/(partner)')
+    else if (role === 'client') router.replace('/(client)')
     else router.replace('/(auth)/login')
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, session])

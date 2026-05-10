@@ -35,7 +35,7 @@
 
 ---
 
-## Phase 3 — Deal creation flow 🔄 (en cours)
+## Phase 3 — Deal creation flow ✅
 
 **Objectif :** Un partenaire peut créer un dossier complet depuis l'app mobile : SIREN → enrichissement entreprise → devis → mensualité indicative → soumission.
 
@@ -53,6 +53,12 @@
 - SCR-PARTNER-005 : upload devis PDF → Supabase Storage (signed URL) → extraction mock
 - SCR-PARTNER-006 : mensualité indicative + risk band + soumission
 - `useDealCreationStore` Zustand pour persister l'état entre les écrans
+
+**Validation locale :**
+- Backend : 68 tests passent (`pytest tests/ -v`)
+- Mobile : TypeScript strict OK (`npx tsc --noEmit`)
+- Mobile : lint OK (`npm run lint`)
+- Note : la migration distante Supabase doit être vérifiée/appliquée après `supabase link` ou via MCP authentifié.
 
 ---
 
