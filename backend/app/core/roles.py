@@ -6,5 +6,6 @@ class UserRole(str, Enum):
     client = "client"
     admin = "admin"
     ops = "ops"
+    risk = "risk"
     financier = "financier"
     cfo = "cfo"
