@@ -33,6 +33,9 @@ export default function RootLayout() {
     const role = normalizeRole(session.user.user_metadata?.active_role)
     if (role === 'partner') router.replace('/(partner)')
     else if (role === 'client') router.replace('/(client)')
+    else if (role === 'admin' || role === 'ops' || role === 'risk' || role === 'financier' || role === 'cfo') {
+      router.replace('/(tabs)')
+    }
     else router.replace('/(auth)/login')
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, session])

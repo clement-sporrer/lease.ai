@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router'
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 
 import { useCreateDeal } from '@/src/hooks/useCreateDeal'
 import { useDealCreationStore } from '@/src/stores/dealCreation'
@@ -44,16 +44,19 @@ export default function EnrichmentScreen() {
     if (ageInYears < 2) warnings.push('Société de moins de 2 ans')
   }
 
-  const handleConfirm = () => {
-    createDeal.mutate(
-      {
+  const handleConfirm = async () => {
+    try {
+      await createDeal.mutateAsync({
         company_id: company.id,
         currency: 'EUR',
-      },
-      {
-        onSuccess: () => router.push('/(partner)/deals/new/quote' as never),
-      },
-    )
+      })
+      router.replace('/(partner)/deals/new/quote' as never)
+    } catch (error) {
+      Alert.alert(
+        'Confirmation impossible',
+        error instanceof Error ? error.message : 'Erreur inconnue',
+      )
+    }
   }
 
   return (

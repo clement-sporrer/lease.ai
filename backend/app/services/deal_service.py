@@ -5,6 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import AppError
+from app.models.profile import Profile
 from app.models.deal import Deal
 
 _ALLOWED_TRANSITIONS: dict[str, list[str]] = {
@@ -54,6 +55,18 @@ def _assert_transition(current: str, target: str) -> None:
         )
 
 
+async def _ensure_profile_exists(db: AsyncSession, user_id: str | None) -> uuid.UUID | None:
+    user_uuid = _as_uuid(user_id)
+    if user_uuid is None:
+        return None
+
+    result = await db.execute(select(Profile).where(Profile.id == user_uuid))
+    profile = result.scalar_one_or_none()
+    if profile is None:
+        db.add(Profile(id=user_uuid))
+    return user_uuid
+
+
 async def create_deal(
     db: AsyncSession,
     company_id: uuid.UUID,
@@ -62,11 +75,12 @@ async def create_deal(
     currency: str = "EUR",
     duration_months: int | None = None,
 ) -> Deal:
+    submitted_by_user_id = await _ensure_profile_exists(db, user_id)
     deal = Deal(
         id=uuid.uuid4(),
         public_id=_generate_public_id(),
         company_id=company_id,
-        submitted_by_user_id=_as_uuid(user_id),
+        submitted_by_user_id=submitted_by_user_id,
         status="company_enriched",
         amount_cents=amount_cents,
         currency=currency,
@@ -120,7 +134,7 @@ async def submit_deal(db: AsyncSession, deal_id: uuid.UUID, user_id: str | None)
     deal = await get_deal(db, deal_id)
     _assert_transition(deal.status, "submitted")
     deal.status = "submitted"
-    deal.submitted_by_user_id = _as_uuid(user_id)
+    deal.submitted_by_user_id = await _ensure_profile_exists(db, user_id)
     await db.commit()
     await db.refresh(deal)
     return deal
