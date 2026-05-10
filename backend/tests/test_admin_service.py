@@ -158,3 +158,130 @@ async def test_get_checklist_empty_docs_all_docs_validated_false():
     checklist = await admin_service.get_checklist(db, deal.id)
     assert checklist["all_docs_validated"] is False
     assert checklist["checklist_complete"] is False
+
+
+@pytest.mark.asyncio
+async def test_start_review_transitions_submitted_to_internal_review():
+    from unittest.mock import patch
+    from app.services import admin_service, audit_service
+
+    deal = _make_deal("submitted")
+    db = AsyncMock()
+    deal_result = MagicMock()
+    deal_result.scalar_one_or_none.return_value = deal
+    db.execute.return_value = deal_result
+    actor_id = uuid.uuid4()
+
+    with patch.object(audit_service, "log", new_callable=AsyncMock) as mock_log:
+        result = await admin_service.start_review(db, deal.id, actor_id, "ops")
+
+    assert result.status == "internal_review"
+    db.commit.assert_called_once()
+    mock_log.assert_called_once_with(
+        db=db,
+        deal_id=deal.id,
+        actor_id=actor_id,
+        actor_role="ops",
+        action="status_transition",
+        payload={"from": "submitted", "to": "internal_review"},
+    )
+
+
+@pytest.mark.asyncio
+async def test_start_review_invalid_transition_raises():
+    from app.services import admin_service
+    from app.core.errors import AppError
+
+    deal = _make_deal("draft")
+    db = AsyncMock()
+    deal_result = MagicMock()
+    deal_result.scalar_one_or_none.return_value = deal
+    db.execute.return_value = deal_result
+
+    with pytest.raises(AppError) as exc_info:
+        await admin_service.start_review(db, deal.id, uuid.uuid4(), "ops")
+    assert exc_info.value.code == "INVALID_TRANSITION"
+
+
+@pytest.mark.asyncio
+async def test_pre_approve_manual_override_requires_justification():
+    from app.services import admin_service
+    from app.core.errors import AppError
+
+    deal = _make_deal("internal_review")
+    deal.risk_score = None  # incomplete checklist
+
+    db = AsyncMock()
+    deal_result = MagicMock()
+    deal_result.scalar_one_or_none.return_value = deal
+    doc_result = MagicMock()
+    doc_result.scalars.return_value.all.return_value = []
+    # pre_approve calls _get_deal (1), then get_checklist calls _get_deal (2) + doc query (3)
+    db.execute.side_effect = [deal_result, deal_result, doc_result]
+
+    with pytest.raises(AppError) as exc_info:
+        await admin_service.pre_approve(db, deal.id, uuid.uuid4(), "ops", justification=None)
+    assert exc_info.value.code == "REASON_REQUIRED"
+
+
+@pytest.mark.asyncio
+async def test_pre_approve_manual_override_with_justification_succeeds():
+    from unittest.mock import patch
+    from app.services import admin_service, audit_service
+
+    deal = _make_deal("internal_review")
+    deal.risk_score = None  # incomplete checklist
+
+    db = AsyncMock()
+    deal_result = MagicMock()
+    deal_result.scalar_one_or_none.return_value = deal
+    doc_result = MagicMock()
+    doc_result.scalars.return_value.all.return_value = []
+    # _get_deal called twice: once in pre_approve, once in get_checklist; doc query last
+    db.execute.side_effect = [deal_result, deal_result, doc_result]
+
+    with patch.object(audit_service, "log", new_callable=AsyncMock) as mock_log:
+        result = await admin_service.pre_approve(
+            db, deal.id, uuid.uuid4(), "admin", justification="Override — client VIP"
+        )
+
+    assert result.status == "pre_approved"
+    payload = mock_log.call_args.kwargs["payload"]
+    assert payload["manual_override"] is True
+    assert payload["justification"] == "Override — client VIP"
+
+
+@pytest.mark.asyncio
+async def test_reject_requires_reason():
+    from app.services import admin_service
+    from app.core.errors import AppError
+
+    deal = _make_deal("internal_review")
+    db = AsyncMock()
+    deal_result = MagicMock()
+    deal_result.scalar_one_or_none.return_value = deal
+    db.execute.return_value = deal_result
+
+    with pytest.raises(AppError) as exc_info:
+        await admin_service.reject(db, deal.id, uuid.uuid4(), "ops", reason="")
+    assert exc_info.value.code == "REASON_REQUIRED"
+
+
+@pytest.mark.asyncio
+async def test_reject_transitions_to_financier_rejected():
+    from unittest.mock import patch
+    from app.services import admin_service, audit_service
+
+    deal = _make_deal("internal_review")
+    db = AsyncMock()
+    deal_result = MagicMock()
+    deal_result.scalar_one_or_none.return_value = deal
+    db.execute.return_value = deal_result
+
+    with patch.object(audit_service, "log", new_callable=AsyncMock):
+        result = await admin_service.reject(
+            db, deal.id, uuid.uuid4(), "admin", reason="Dossier incomplet"
+        )
+
+    assert result.status == "financier_rejected"
+    db.commit.assert_called_once()
