@@ -1,0 +1,52 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 1 /Kids [3 0 R] >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 342 >>
+stream
+BT
+/F1 22 Tf
+50 760 Td
+(LeaseAI - Invoice) Tj
+/F1 11 Tf
+0 -22 Td
+(Invoice number: INV-2026-0001) Tj
+0 -22 Td
+(Lessee: Globex Inc.) Tj
+0 -22 Td
+(Period: 2026-05-01 -> 2026-05-31) Tj
+0 -22 Td
+(Amount excl. tax: 2 175.00 EUR) Tj
+0 -22 Td
+(VAT 20%: 435.00 EUR) Tj
+0 -22 Td
+(Amount incl. tax: 2 610.00 EUR) Tj
+0 -22 Td
+(Due date: 2026-05-15) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000121 00000 n 
+0000000247 00000 n 
+0000000640 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+710
+%%EOF

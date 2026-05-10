@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     supabase_service_role_key: str = ""
     jwks_url: str = "https://conxwmnjhntbzftwgxig.supabase.co/auth/v1/.well-known/jwks.json"
     cors_origins: list[str] = ["http://localhost:3000", "http://localhost:8081"]
+    demo_mode: bool = True
+    demo_latency_ms: int = 600
 
 
 settings = Settings()
