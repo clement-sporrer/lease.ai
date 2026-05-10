@@ -23,7 +23,8 @@ def _extract_active_role(access_token: str) -> str:
         payload_part += "=" * (padding % 4)
         payload = json.loads(base64.urlsafe_b64decode(payload_part))
         return payload.get("user_metadata", {}).get("active_role", "")
-    except Exception:
+    except (IndexError, ValueError, json.JSONDecodeError):
+        logger.warning("Failed to extract active_role from JWT payload", exc_info=True)
         return ""
 
 

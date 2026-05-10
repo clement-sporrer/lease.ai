@@ -109,6 +109,45 @@ async def test_login_missing_body():
 
 
 # ---------------------------------------------------------------------------
+# GET /me
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_get_me_success():
+    from app.core.auth import get_current_user
+
+    fake_user = {"user_id": "test-uuid", "active_role": "partner_user"}
+    app.dependency_overrides[get_current_user] = lambda: fake_user
+    try:
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as client:
+            response = await client.get(
+                "/me",
+                headers={"Authorization": "Bearer fake.token.value"},
+            )
+    finally:
+        app.dependency_overrides.pop(get_current_user, None)
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["user_id"] == "test-uuid"
+    assert data["active_role"] == "partner_user"
+
+
+@pytest.mark.asyncio
+async def test_get_me_no_token():
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        response = await client.get("/me")
+
+    # HTTPBearer returns 401 when Authorization header is missing
+    assert response.status_code == 401
+
+
+# ---------------------------------------------------------------------------
 # POST /me/active-role
 # ---------------------------------------------------------------------------
 
