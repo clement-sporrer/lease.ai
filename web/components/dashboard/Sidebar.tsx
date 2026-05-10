@@ -7,6 +7,13 @@ import { cn } from '@/lib/utils'
 type NavItem = { label: string; href: string }
 type SidebarProps = { role: 'admin' | 'ops' | 'financier' | 'cfo'; items: NavItem[] }
 
+const EXACT_MATCH_PATHS = ['/admin', '/ops', '/financier', '/cfo']
+
+function isActiveLink(href: string, pathname: string): boolean {
+  if (EXACT_MATCH_PATHS.includes(href)) return pathname === href
+  return pathname.startsWith(href)
+}
+
 const ROLE_LABELS: Record<SidebarProps['role'], string> = {
   admin: 'Administrateur',
   ops: 'Opérations',
@@ -30,7 +37,7 @@ export function Sidebar({ role, items }: SidebarProps) {
             href={item.href}
             className={cn(
               'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
-              pathname === item.href
+              isActiveLink(item.href, pathname)
                 ? 'bg-blue-500 text-white font-medium'
                 : 'text-white/60 hover:text-white hover:bg-white/10',
             )}

@@ -4,7 +4,6 @@ type Props = {
   label: string
   value: string
   sublabel?: string
-  trend?: 'up' | 'down' | 'neutral'
   color?: Color
 }
 

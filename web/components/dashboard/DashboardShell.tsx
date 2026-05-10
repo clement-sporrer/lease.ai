@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Sidebar } from './Sidebar'
 
 type NavItem = { label: string; href: string }
@@ -7,32 +8,32 @@ type Props = {
   role: Role
   title: string
   subtitle?: string
-  children: React.ReactNode
+  children: ReactNode
 }
 
 const NAV_ITEMS: Record<Role, NavItem[]> = {
   admin: [
-    { label: 'Dashboard', href: '/' },
-    { label: 'Dossiers', href: '/deals' },
-    { label: "File d'attente", href: '/queue' },
-    { label: 'Utilisateurs', href: '/users' },
+    { label: 'Dashboard', href: '/admin' },
+    { label: 'Dossiers', href: '/admin/deals' },
+    { label: "File d'attente", href: '/admin/queue' },
+    { label: 'Utilisateurs', href: '/admin/users' },
   ],
   ops: [
-    { label: 'Dashboard', href: '/' },
-    { label: 'Dossiers', href: '/deals' },
-    { label: 'Tâches', href: '/tasks' },
-    { label: 'Documents', href: '/documents' },
+    { label: 'Dashboard', href: '/ops' },
+    { label: 'Dossiers', href: '/ops/deals' },
+    { label: 'Tâches', href: '/ops/tasks' },
+    { label: 'Documents', href: '/ops/documents' },
   ],
   financier: [
-    { label: 'Dashboard', href: '/' },
-    { label: 'Packages refi', href: '/packages' },
-    { label: 'Décisions', href: '/decisions' },
+    { label: 'Dashboard', href: '/financier' },
+    { label: 'Packages refi', href: '/financier/packages' },
+    { label: 'Décisions', href: '/financier/decisions' },
   ],
   cfo: [
-    { label: 'Dashboard', href: '/' },
-    { label: 'Portfolio', href: '/portfolio' },
-    { label: 'Indicateurs', href: '/kpis' },
-    { label: 'Rapports', href: '/reports' },
+    { label: 'Dashboard', href: '/cfo' },
+    { label: 'Portfolio', href: '/cfo/portfolio' },
+    { label: 'Indicateurs', href: '/cfo/kpis' },
+    { label: 'Rapports', href: '/cfo/reports' },
   ],
 }
 
