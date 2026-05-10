@@ -17,6 +17,10 @@ class DealPatchRequest(BaseModel):
     currency: str | None = None
 
 
+class DealStatusRequest(BaseModel):
+    status: str
+
+
 class DealResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
