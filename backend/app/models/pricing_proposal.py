@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from decimal import Decimal
 
 from sqlalchemy import BigInteger, DateTime, ForeignKey, Integer, Numeric, String, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
@@ -18,8 +19,8 @@ class PricingProposal(Base):
     duration_months: Mapped[int] = mapped_column(Integer, nullable=False)
     monthly_payment_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
     residual_value_cents: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default="0")
-    refi_rate: Mapped[float] = mapped_column(Numeric(6, 4), nullable=False)
-    margin_rate: Mapped[float] = mapped_column(Numeric(6, 4), nullable=False)
+    refi_rate: Mapped[Decimal] = mapped_column(Numeric(6, 4), nullable=False)
+    margin_rate: Mapped[Decimal] = mapped_column(Numeric(6, 4), nullable=False)
     fees_cents: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default="0")
     assumptions: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     version: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")

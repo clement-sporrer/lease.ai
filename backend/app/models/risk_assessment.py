@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, Text, func
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -14,7 +14,7 @@ class RiskAssessment(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     deal_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("deals.id", ondelete="CASCADE"), nullable=False)
     score: Mapped[int] = mapped_column(Integer, nullable=False)
-    band: Mapped[str] = mapped_column(Text(), nullable=False)
+    band: Mapped[str] = mapped_column(String(20), nullable=False)
     flags: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     rules_applied: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     recommendation: Mapped[str | None] = mapped_column(Text(), nullable=True)
