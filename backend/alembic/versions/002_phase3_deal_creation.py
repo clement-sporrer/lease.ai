@@ -25,7 +25,7 @@ def upgrade() -> None:
         sa.Column("contract_id", postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column("organization_id", postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column("type", sa.String(50), nullable=False),
-        sa.Column("status", sa.String(50), server_default="uploaded", nullable=False),
+        sa.Column("status", sa.String(50), server_default="pending_upload", nullable=False),
         sa.Column("file_name", sa.String(255), nullable=False),
         sa.Column("storage_key", sa.Text(), nullable=True),
         sa.Column("mime_type", sa.String(100), nullable=True),
@@ -107,7 +107,34 @@ def upgrade() -> None:
     )
 
 
+    # FK indexes
+    op.create_index("ix_documents_deal_id", "documents", ["deal_id"])
+    op.create_index("ix_quotes_deal_id", "quotes", ["deal_id"])
+    op.create_index("ix_quote_items_quote_id", "quote_items", ["quote_id"])
+    op.create_index("ix_risk_assessments_deal_id", "risk_assessments", ["deal_id"])
+    op.create_index("ix_pricing_proposals_deal_id", "pricing_proposals", ["deal_id"])
+
+    op.execute("""
+        CREATE OR REPLACE FUNCTION set_updated_at()
+        RETURNS TRIGGER LANGUAGE plpgsql AS $$
+        BEGIN NEW.updated_at = now(); RETURN NEW; END;
+        $$;
+        CREATE TRIGGER quotes_set_updated_at
+            BEFORE UPDATE ON quotes
+            FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+    """)
+
+
 def downgrade() -> None:
+    op.execute("DROP TRIGGER IF EXISTS quotes_set_updated_at ON quotes;")
+    op.execute("DROP FUNCTION IF EXISTS set_updated_at;")
+
+    op.drop_index("ix_pricing_proposals_deal_id", table_name="pricing_proposals")
+    op.drop_index("ix_risk_assessments_deal_id", table_name="risk_assessments")
+    op.drop_index("ix_quote_items_quote_id", table_name="quote_items")
+    op.drop_index("ix_quotes_deal_id", table_name="quotes")
+    op.drop_index("ix_documents_deal_id", table_name="documents")
+
     op.drop_table("pricing_proposals")
     op.drop_table("risk_assessments")
     op.drop_table("quote_items")
