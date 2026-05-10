@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app
@@ -27,7 +27,7 @@ def test_me_invalid_token(client):
 
 def test_me_valid_token(client, test_ec_key, make_token):
     token = make_token("user-xyz", "partner")
-    with patch("app.core.auth._get_jwks", return_value=test_ec_key["jwks"]):
+    with patch("app.core.auth._get_jwks", new_callable=AsyncMock, return_value=test_ec_key["jwks"]):
         response = client.get("/me", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 200
     data = response.json()

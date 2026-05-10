@@ -1,3 +1,4 @@
+import asyncio
 import time
 from typing import Any
 
@@ -19,22 +20,25 @@ class AuthError(Exception):
     pass
 
 
-def _get_jwks() -> dict:
+def _fetch_jwks_sync() -> dict:
+    response = httpx.get(settings.jwks_url, timeout=5)
+    response.raise_for_status()
+    return response.json()
+
+
+async def _get_jwks() -> dict:
     now = time.time()
     if _jwks_cache["keys"] is None or now - _jwks_cache["fetched_at"] > _JWKS_TTL:
-        response = httpx.get(settings.jwks_url, timeout=5)
-        response.raise_for_status()
-        _jwks_cache["keys"] = response.json()
+        data = await asyncio.to_thread(_fetch_jwks_sync)
+        _jwks_cache["keys"] = data
         _jwks_cache["fetched_at"] = now
     return _jwks_cache["keys"]
 
 
-def verify_token(token: str) -> dict:
+async def verify_token(token: str) -> dict:
     try:
-        jwks = _get_jwks()
-        payload = jwt.decode(
-            token, jwks, algorithms=["ES256"], audience="authenticated"
-        )
+        jwks = await _get_jwks()
+        payload = jwt.decode(token, jwks, algorithms=["ES256"], audience="authenticated")
     except ExpiredSignatureError:
         raise AuthError("Token expired")
     except JWTError as exc:
@@ -43,20 +47,25 @@ def verify_token(token: str) -> dict:
     user_id: str = payload.get("sub", "")
     if not user_id:
         raise AuthError("Token missing sub claim")
+
     raw_role: str = payload.get("user_metadata", {}).get("active_role", "")
 
-    try:
-        active_role = UserRole(raw_role)
-    except ValueError:
-        raise AuthError(f"Invalid role in token: {raw_role!r}")
+    # Empty role is valid — new users have no role yet
+    if raw_role == "":
+        active_role = None
+    else:
+        try:
+            active_role = UserRole(raw_role)
+        except ValueError:
+            raise AuthError(f"Invalid role in token: {raw_role!r}")
 
     return {"user_id": user_id, "active_role": active_role}
 
 
-def get_current_user(
+async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(_bearer),
 ) -> dict:
     try:
-        return verify_token(credentials.credentials)
+        return await verify_token(credentials.credentials)
     except AuthError as exc:
         raise HTTPException(status_code=401, detail=str(exc)) from exc
