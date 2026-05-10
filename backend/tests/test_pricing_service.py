@@ -46,6 +46,7 @@ def test_fees_added_per_month():
 
 
 def test_short_duration():
+    # 60 000€ over 6 months at 7% total — monthly ≈ 10 196€
     result = compute_monthly_payment(
         amount_cents=6_000_000,
         duration_months=6,
@@ -53,7 +54,7 @@ def test_short_duration():
         margin_rate=0.025,
         fees_cents=0,
     )
-    assert result > 0
+    assert 1_018_000 <= result <= 1_022_000
 
 
 def test_result_is_integer():
