@@ -40,6 +40,8 @@ async def test_get_queue_returns_submitted_and_internal_review():
 
     result = await admin_service.get_queue(db)
     assert len(result) == 2
+    assert all(d.status in ("submitted", "internal_review", "missing_documents") for d in result)
+    db.execute.assert_called_once()
 
 
 @pytest.mark.asyncio
@@ -101,6 +103,56 @@ async def test_get_checklist_incomplete_when_doc_pending():
     deal_result.scalar_one_or_none.return_value = deal
     doc_result = MagicMock()
     doc_result.scalars.return_value.all.return_value = [doc]
+    db.execute.side_effect = [deal_result, doc_result]
+
+    checklist = await admin_service.get_checklist(db, deal.id)
+    assert checklist["all_docs_validated"] is False
+    assert checklist["checklist_complete"] is False
+
+
+@pytest.mark.asyncio
+async def test_get_checklist_incomplete_when_no_risk_score():
+    from app.services import admin_service
+
+    deal = _make_deal("internal_review")
+    deal.risk_score = None  # no risk score — checklist_complete must be False
+    deal.risk_band = None
+    deal.monthly_payment_cents = None
+
+    doc = MagicMock(spec=Document)
+    doc.id = uuid.uuid4()
+    doc.deal_id = deal.id
+    doc.type = "quote"
+    doc.status = "validated"
+    doc.file_name = "q.pdf"
+    doc.created_at = datetime.now(timezone.utc)
+
+    db = AsyncMock()
+    deal_result = MagicMock()
+    deal_result.scalar_one_or_none.return_value = deal
+    doc_result = MagicMock()
+    doc_result.scalars.return_value.all.return_value = [doc]
+    db.execute.side_effect = [deal_result, doc_result]
+
+    checklist = await admin_service.get_checklist(db, deal.id)
+    assert checklist["all_docs_validated"] is True
+    assert checklist["checklist_complete"] is False  # doc validated but risk_score missing
+
+
+@pytest.mark.asyncio
+async def test_get_checklist_empty_docs_all_docs_validated_false():
+    from app.services import admin_service
+
+    deal = _make_deal("internal_review")
+    deal.risk_score = 70.0
+    deal.risk_band = "low"
+    deal.monthly_payment_cents = 80000
+
+    db = AsyncMock()
+    deal_result = MagicMock()
+    deal_result.scalar_one_or_none.return_value = deal
+    doc_result = MagicMock()
+    doc_result.scalars.return_value.all.return_value = []
     db.execute.side_effect = [deal_result, doc_result]
 
     checklist = await admin_service.get_checklist(db, deal.id)
