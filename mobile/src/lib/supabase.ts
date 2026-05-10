@@ -2,28 +2,26 @@ import { createClient } from '@supabase/supabase-js'
 import * as SecureStore from 'expo-secure-store'
 import { Platform } from 'react-native'
 
-// expo-secure-store exports an empty object on web (no Keychain/Keystore available).
-// Use localStorage on web, SecureStore on native.
+// expo-secure-store has no web implementation (exports empty object).
+// On web browser: use localStorage. On SSR (Node.js): no-op (window undefined).
+// On native: use SecureStore (iOS Keychain / Android Keystore).
+const isBrowser = Platform.OS === 'web' && typeof window !== 'undefined'
+
 const ExpoSecureStoreAdapter = {
   getItem: (key: string): Promise<string | null> => {
-    if (Platform.OS === 'web') {
-      return Promise.resolve(localStorage.getItem(key))
-    }
+    if (isBrowser) return Promise.resolve(localStorage.getItem(key))
+    if (Platform.OS === 'web') return Promise.resolve(null)
     return SecureStore.getItemAsync(key)
   },
   setItem: (key: string, value: string): Promise<void> => {
-    if (Platform.OS === 'web') {
-      localStorage.setItem(key, value)
-      return Promise.resolve()
-    }
-    return SecureStore.setItemAsync(key, value)
+    if (isBrowser) localStorage.setItem(key, value)
+    if (Platform.OS !== 'web') return SecureStore.setItemAsync(key, value)
+    return Promise.resolve()
   },
   removeItem: (key: string): Promise<void> => {
-    if (Platform.OS === 'web') {
-      localStorage.removeItem(key)
-      return Promise.resolve()
-    }
-    return SecureStore.deleteItemAsync(key)
+    if (isBrowser) localStorage.removeItem(key)
+    if (Platform.OS !== 'web') return SecureStore.deleteItemAsync(key)
+    return Promise.resolve()
   },
 }
 
