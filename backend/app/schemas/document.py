@@ -12,7 +12,6 @@ class DocumentUploadUrlResponse(BaseModel):
 
 class DocumentConfirmRequest(BaseModel):
     document_id: uuid.UUID
-    storage_key: str
     file_name: str
     mime_type: str
     size_bytes: int

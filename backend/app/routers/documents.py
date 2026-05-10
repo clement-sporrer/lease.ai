@@ -39,7 +39,6 @@ async def confirm_upload(
         db=db,
         deal_id=deal_id,
         document_id=body.document_id,
-        storage_key=body.storage_key,
         file_name=body.file_name,
         mime_type=body.mime_type,
         size_bytes=body.size_bytes,

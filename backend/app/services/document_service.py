@@ -66,7 +66,6 @@ async def confirm_upload(
     db: AsyncSession,
     deal_id: uuid.UUID,
     document_id: uuid.UUID,
-    storage_key: str,
     file_name: str,
     mime_type: str,
     size_bytes: int,
@@ -78,14 +77,7 @@ async def confirm_upload(
     document = result.scalar_one_or_none()
     if document is None:
         raise AppError(404, "DOCUMENT_NOT_FOUND", f"Document {document_id} not found")
-    if document.storage_key and storage_key != document.storage_key:
-        raise AppError(
-            400,
-            "STORAGE_KEY_MISMATCH",
-            "Confirmed storage key does not match the pending document",
-        )
 
-    document.storage_key = document.storage_key or storage_key
     document.file_name = file_name
     document.mime_type = mime_type
     document.size_bytes = size_bytes

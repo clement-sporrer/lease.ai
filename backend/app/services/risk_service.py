@@ -62,9 +62,9 @@ def assess_risk(
     band = _band_for_score(score)
 
     recommendations = {
-        "green": "Profil favorable.",
-        "orange": "Profil a surveiller.",
-        "red": "Profil a risque eleve.",
+        "green": "Favorable profile.",
+        "orange": "Profile requires monitoring.",
+        "red": "High-risk profile.",
     }
 
     return {

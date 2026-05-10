@@ -1,13 +1,16 @@
 import uuid
 
-from fastapi import APIRouter, Depends, Header, Response
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core import idempotency
 from app.core.auth import get_current_user
 from app.core.db import get_db
+from app.core.roles import UserRole
 from app.schemas.deal import DealCreateRequest, DealPatchRequest, DealResponse, DealStatusRequest
 from app.services import deal_service
+
+_INTERNAL_ROLES = {UserRole.admin, UserRole.ops}
 
 router = APIRouter(prefix="/deals", tags=["deals"])
 
@@ -42,12 +45,12 @@ async def create_deal(
 
 @router.get("")
 async def list_deals(
-    page: int = 1,
-    per_page: int = 20,
+    page: int = Query(default=1, ge=1),
+    per_page: int = Query(default=20, ge=1, le=100),
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    del current_user
+    # TODO(phase4): filter by partner_org_id for partner_user once profile→org lookup is wired
     deals, total = await deal_service.list_deals(db, page=page, per_page=per_page)
     return {
         "data": [DealResponse.model_validate(deal).model_dump(mode="json") for deal in deals],
@@ -101,7 +104,8 @@ async def transition_deal_status(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    del current_user
+    if current_user.get("active_role") not in _INTERNAL_ROLES:
+        raise HTTPException(status_code=403, detail="Forbidden: internal endpoint")
     deal = await deal_service.transition_deal(db, deal_id, body.status)
     return {"data": DealResponse.model_validate(deal).model_dump(mode="json")}
 
