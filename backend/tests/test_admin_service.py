@@ -246,6 +246,7 @@ async def test_pre_approve_manual_override_with_justification_succeeds():
         )
 
     assert result.status == "pre_approved"
+    db.commit.assert_called_once()
     payload = mock_log.call_args.kwargs["payload"]
     assert payload["manual_override"] is True
     assert payload["justification"] == "Override — client VIP"
@@ -278,10 +279,19 @@ async def test_reject_transitions_to_financier_rejected():
     deal_result.scalar_one_or_none.return_value = deal
     db.execute.return_value = deal_result
 
-    with patch.object(audit_service, "log", new_callable=AsyncMock):
+    actor_id = uuid.uuid4()
+    with patch.object(audit_service, "log", new_callable=AsyncMock) as mock_log:
         result = await admin_service.reject(
-            db, deal.id, uuid.uuid4(), "admin", reason="Dossier incomplet"
+            db, deal.id, actor_id, "admin", reason="Dossier incomplet"
         )
 
     assert result.status == "financier_rejected"
     db.commit.assert_called_once()
+    mock_log.assert_called_once_with(
+        db=db,
+        deal_id=deal.id,
+        actor_id=actor_id,
+        actor_role="admin",
+        action="deal_rejected",
+        payload={"reason": "Dossier incomplet"},
+    )
