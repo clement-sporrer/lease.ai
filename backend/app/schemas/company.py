@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class EnrichRequest(BaseModel):
-    siren: str = Field(..., pattern=r"^\d{9}$|^\d{14}$")
+    siren_or_siret: str = Field(..., pattern=r"^\d{9}$|^\d{14}$")
 
 
 class CompanyResponse(BaseModel):

@@ -46,5 +46,6 @@ class QuoteResponse(BaseModel):
     currency: str
     category: str | None
     extraction_status: str
+    items: list[QuoteItemResponse] = []
     created_at: datetime
     updated_at: datetime

@@ -1,6 +1,7 @@
 import time
 from typing import Any
 
+# NOTE: In-memory store — safe for single-worker dev/test. Replace with Redis before multi-worker deploy.
 _STORE: dict[str, tuple[Any, float]] = {}
 _TTL_SECONDS = 86_400  # 24 hours
 

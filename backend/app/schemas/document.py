@@ -7,7 +7,6 @@ from pydantic import BaseModel, ConfigDict
 class DocumentUploadUrlResponse(BaseModel):
     document_id: uuid.UUID
     upload_url: str
-    storage_path: str
     expires_in: int = 3600
 
 
