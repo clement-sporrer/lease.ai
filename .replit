@@ -1,0 +1,25 @@
+run = "bash scripts/replit-run.sh"
+entrypoint = "scripts/replit-run.sh"
+
+[nix]
+channel = "stable-24_05"
+
+[env]
+NEXT_PUBLIC_API_URL = "/api"
+DEMO_MODE = "true"
+PYTHONUNBUFFERED = "1"
+
+[[ports]]
+localPort = 3000
+externalPort = 80
+
+[[ports]]
+localPort = 8000
+externalPort = 8000
+
+[gitHubImport]
+requiredFiles = [".replit", "replit.nix", "scripts/replit-run.sh"]
+
+[deployment]
+run = ["bash", "scripts/replit-run.sh"]
+deploymentTarget = "vm"
