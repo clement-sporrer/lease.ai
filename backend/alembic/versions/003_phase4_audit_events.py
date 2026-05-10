@@ -30,7 +30,7 @@ def upgrade() -> None:
         "audit_events",
         sa.Column("id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("deal_id", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("actor_id", postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column("actor_id", postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column("actor_role", sa.String(50), nullable=False),
         sa.Column("action", sa.String(50), nullable=False),
         sa.Column("payload", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
