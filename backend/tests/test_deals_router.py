@@ -151,19 +151,22 @@ async def test_submit_deal_invalid_transition(make_token, test_ec_key):
 
 
 @pytest.mark.asyncio
-async def test_deal_timeline_returns_empty_list(make_token, test_ec_key):
-    token = make_token("user-abc", "partner")
-    deal_id = str(uuid.uuid4())
-    with patch("app.core.auth._get_jwks", new_callable=AsyncMock, return_value=test_ec_key["jwks"]):
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
-            response = await client.get(
-                f"/deals/{deal_id}/timeline",
-                headers={"Authorization": f"Bearer {token}"},
-            )
+async def test_deal_timeline_returns_events(make_token, test_ec_key):
+    import uuid as _uuid
+    token = make_token(str(_uuid.uuid4()), "partner")
+    deal_id = _uuid.uuid4()
+    with patch("app.services.audit_service.get_timeline", new_callable=AsyncMock, return_value=[]):
+        with patch("app.core.auth._get_jwks", new_callable=AsyncMock, return_value=test_ec_key["jwks"]):
+            async with AsyncClient(
+                transport=ASGITransport(app=app), base_url="http://test"
+            ) as client:
+                response = await client.get(
+                    f"/deals/{deal_id}/timeline",
+                    headers={"Authorization": f"Bearer {token}"},
+                )
     assert response.status_code == 200
     assert response.json()["data"] == []
+    assert response.json()["meta"]["total"] == 0
 
 
 @pytest.mark.asyncio

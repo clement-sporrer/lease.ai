@@ -1,3 +1,4 @@
+from app.models.audit_event import AuditEvent
 from app.models.company import Company
 from app.models.deal import Deal
 from app.models.document import Document
@@ -9,6 +10,7 @@ from app.models.risk_assessment import RiskAssessment
 from app.models.user_role import UserRole
 
 __all__ = [
+    "AuditEvent",
     "Company",
     "Deal",
     "Document",

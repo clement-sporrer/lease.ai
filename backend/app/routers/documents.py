@@ -1,20 +1,24 @@
 import uuid
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_user
 from app.core.db import get_db
+from app.core.roles import UserRole
 from app.models.document import Document
 from app.schemas.document import (
     DocumentConfirmRequest,
+    DocumentRejectRequest,
     DocumentResponse,
     DocumentUploadUrlResponse,
 )
 from app.services import document_service
 
 router = APIRouter(tags=["documents"])
+
+_DOC_WRITE_ROLES = {UserRole.admin, UserRole.ops}
 
 
 @router.post("/deals/{deal_id}/documents/upload-url", status_code=201)
@@ -34,8 +38,15 @@ async def confirm_upload(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    del current_user
-    document = await document_service.confirm_upload(
+    raw_user_id = current_user.get("user_id")
+    try:
+        actor_id: uuid.UUID | None = uuid.UUID(raw_user_id) if raw_user_id else None
+    except ValueError:
+        actor_id = None
+    actor_role = current_user.get("active_role", "partner")
+    if isinstance(actor_role, UserRole):
+        actor_role = actor_role.value
+    document = await document_service.confirm_upload_and_maybe_resume_review(
         db=db,
         deal_id=deal_id,
         document_id=body.document_id,
@@ -43,6 +54,43 @@ async def confirm_upload(
         mime_type=body.mime_type,
         size_bytes=body.size_bytes,
         document_type=body.document_type,
+        actor_id=actor_id,
+        actor_role=actor_role,
+    )
+    return {"data": DocumentResponse.model_validate(document).model_dump(mode="json")}
+
+
+@router.post("/documents/{document_id}/validate")
+async def validate_document(
+    document_id: uuid.UUID,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    if current_user.get("active_role") not in _DOC_WRITE_ROLES:
+        raise HTTPException(status_code=403, detail="Forbidden: ops or admin required")
+    actor_id = uuid.UUID(current_user["user_id"])
+    actor_role = current_user.get("active_role", "")
+    if isinstance(actor_role, UserRole):
+        actor_role = actor_role.value
+    document = await document_service.validate_document(db, document_id, actor_id, actor_role)
+    return {"data": DocumentResponse.model_validate(document).model_dump(mode="json")}
+
+
+@router.post("/documents/{document_id}/reject")
+async def reject_document(
+    document_id: uuid.UUID,
+    body: DocumentRejectRequest,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    if current_user.get("active_role") not in _DOC_WRITE_ROLES:
+        raise HTTPException(status_code=403, detail="Forbidden: ops or admin required")
+    actor_id = uuid.UUID(current_user["user_id"])
+    actor_role = current_user.get("active_role", "")
+    if isinstance(actor_role, UserRole):
+        actor_role = actor_role.value
+    document = await document_service.reject_document(
+        db, document_id, actor_id, actor_role, body.reason
     )
     return {"data": DocumentResponse.model_validate(document).model_dump(mode="json")}
 
