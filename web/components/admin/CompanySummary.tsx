@@ -7,13 +7,7 @@ interface CompanyData {
   is_inactive?: boolean
 }
 
-export function CompanySummary({
-  companyId,
-  enrichment,
-}: {
-  companyId: string
-  enrichment?: CompanyData
-}) {
+export function CompanySummary({ enrichment }: { enrichment?: CompanyData }) {
   return (
     <div className="mb-4 rounded-xl border border-gray-200 bg-white p-6">
       <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">
@@ -53,9 +47,7 @@ export function CompanySummary({
           )}
         </dl>
       ) : (
-        <p className="text-sm text-gray-400">
-          Données non disponibles (company_id: {companyId})
-        </p>
+        <p className="text-sm text-gray-400">Données non disponibles.</p>
       )}
     </div>
   )

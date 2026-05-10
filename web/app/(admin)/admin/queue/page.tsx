@@ -17,8 +17,8 @@ export default async function AdminQueuePage() {
   let queueData: QueueResponse = { data: [], meta: { total: 0 } }
   try {
     queueData = await apiFetch<QueueResponse>('/admin/queue', session.access_token)
-  } catch (err) {
-    console.error('Failed to fetch admin queue:', err)
+  } catch {
+    // API unavailable — show empty queue
   }
 
   return (

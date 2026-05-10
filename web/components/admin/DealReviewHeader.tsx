@@ -32,7 +32,7 @@ const STATUS_COLOR: Record<string, string> = {
 
 export function DealReviewHeader({ deal }: { deal: Deal }) {
   const color = STATUS_COLOR[deal.status] ?? 'bg-gray-100 text-gray-700'
-  const submittedAt = new Date(deal.created_at).toLocaleDateString('fr-FR', {
+  const updatedAt = new Date(deal.updated_at).toLocaleDateString('fr-FR', {
     day: '2-digit',
     month: 'long',
     year: 'numeric',
@@ -48,7 +48,7 @@ export function DealReviewHeader({ deal }: { deal: Deal }) {
             {STATUS_LABEL[deal.status] ?? deal.status}
           </span>
         </div>
-        <p className="text-sm text-gray-500">Soumis le {submittedAt}</p>
+        <p className="text-sm text-gray-500">Mis à jour le {updatedAt}</p>
       </div>
     </div>
   )

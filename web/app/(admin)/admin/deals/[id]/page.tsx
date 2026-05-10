@@ -43,8 +43,8 @@ export default async function DealReviewPage({ params }: Props) {
     deal = dealRes.data
     checklist = checklistRes.data
     timeline = timelineRes
-  } catch (err) {
-    console.error('Failed to fetch deal review:', err)
+  } catch {
+    // API fetch failed — deal will be null, show error state below
   }
 
   if (!deal) {
@@ -55,7 +55,7 @@ export default async function DealReviewPage({ params }: Props) {
     <DashboardShell role="admin" title={`Dossier ${deal.public_id}`}>
       <div className="max-w-4xl">
         <DealReviewHeader deal={deal} />
-        <CompanySummary companyId={deal.company_id} />
+        <CompanySummary />
         <QuoteSummary deal={deal} />
         <RiskSummary deal={deal} />
         <DocumentList
