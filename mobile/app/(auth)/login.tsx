@@ -11,13 +11,7 @@ import {
 import { useRouter } from 'expo-router'
 import { z } from 'zod'
 import { supabase } from '@/src/lib/supabase'
-
-const ROLE_ROUTES = {
-  partner_user: '/(partner)/' as const,
-  client_user: '/(client)/' as const,
-}
-
-type KnownRole = keyof typeof ROLE_ROUTES
+import { isKnownRole } from '@/src/lib/roles'
 
 const loginSchema = z.object({
   email: z.string().email('Email invalide'),
@@ -60,13 +54,10 @@ export default function LoginScreen() {
         return
       }
 
-      const role = data.session?.user?.user_metadata?.active_role as string | undefined
-
-      if (role && role in ROLE_ROUTES) {
-        router.replace(ROLE_ROUTES[role as KnownRole])
-      } else {
-        setErrors({ root: 'Aucun rôle assigné. Contactez votre administrateur.' })
-      }
+      const rawRole = data.session?.user?.user_metadata?.active_role
+      if (isKnownRole(rawRole) && rawRole === 'partner_user') router.replace('/(partner)/')
+      else if (isKnownRole(rawRole) && rawRole === 'client_user') router.replace('/(client)/')
+      else setErrors({ root: 'Aucun rôle assigné. Contactez votre administrateur.' })
     } finally {
       setIsSubmitting(false)
     }
@@ -130,7 +121,7 @@ export default function LoginScreen() {
             )}
 
             <TouchableOpacity
-              className="bg-blue-500 rounded-xl py-4 items-center mt-2"
+              className={`bg-blue-500 rounded-xl py-4 items-center mt-2 ${isSubmitting ? 'opacity-50' : ''}`}
               onPress={handleSubmit}
               disabled={isSubmitting}
               activeOpacity={0.85}

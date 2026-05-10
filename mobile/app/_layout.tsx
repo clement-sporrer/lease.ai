@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { View } from 'react-native'
 import { supabase } from '@/src/lib/supabase'
 import { useAuthStore } from '@/src/stores/auth'
+import { isKnownRole } from '@/src/lib/roles'
 
 const queryClient = new QueryClient()
 
@@ -13,17 +14,9 @@ export default function RootLayout() {
   const { session, isLoading, setSession, setLoading, setActiveRole } = useAuthStore()
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session: s }, error }) => {
-      if (!error) {
-        setSession(s)
-        setActiveRole(s?.user?.user_metadata?.active_role ?? null)
-      }
-      setLoading(false)
-    })
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s)
-      setActiveRole(s?.user?.user_metadata?.active_role ?? null)
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+      setActiveRole(session?.user?.user_metadata?.active_role ?? null)
       setLoading(false)
     })
 
@@ -37,7 +30,8 @@ export default function RootLayout() {
       router.replace('/(auth)/login')
       return
     }
-    const role = session.user.user_metadata?.active_role as string | undefined
+    const rawRole = session.user.user_metadata?.active_role
+    const role = isKnownRole(rawRole) ? rawRole : null
     if (role === 'partner_user') router.replace('/(partner)/')
     else if (role === 'client_user') router.replace('/(client)/')
     else router.replace('/(auth)/login')
