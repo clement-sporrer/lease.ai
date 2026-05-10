@@ -1,7 +1,7 @@
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useAuthStore } from '@/src/stores/auth'
 import { StatusBadge } from '@/src/components/StatusBadge'
+import { useDisplayName } from '@/src/hooks/useDisplayName'
 
 const MOCK_LEASE = {
   id: 'LSE-2024-001',
@@ -21,11 +21,7 @@ const MOCK_ASSETS = [
 ]
 
 export default function ClientDashboard() {
-  const session = useAuthStore((s) => s.session)
-
-  const rawName = session?.user?.user_metadata?.full_name as string | undefined
-  const emailPrefix = session?.user?.email?.split('@')[0] ?? 'Client'
-  const displayName = rawName ?? emailPrefix
+  const displayName = useDisplayName('Client')
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
@@ -127,6 +123,7 @@ export default function ClientDashboard() {
         <TouchableOpacity
           className="border-2 border-blue-500 rounded-2xl py-4 items-center"
           activeOpacity={0.85}
+          onPress={() => Alert.alert('Conseiller', 'Cette fonctionnalité sera disponible prochainement.')}
         >
           <Text className="text-blue-500 font-semibold text-base">Contacter mon conseiller</Text>
         </TouchableOpacity>

@@ -1,9 +1,9 @@
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native'
 import { useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useAuthStore } from '@/src/stores/auth'
 import { KpiCard } from '@/src/components/KpiCard'
 import { StatusBadge } from '@/src/components/StatusBadge'
+import { useDisplayName } from '@/src/hooks/useDisplayName'
 
 const MOCK_KPIS = { active: 7, engagement: 142000, toComplete: 3, approved: 4 }
 
@@ -13,15 +13,10 @@ const MOCK_DEALS = [
   { id: '3', name: 'SIREN 654321098', status: 'pre_approved', date: '07/05/2026' },
 ]
 
-const HAS_PENDING = MOCK_KPIS.toComplete > 0
-
 export default function PartnerDashboard() {
   const router = useRouter()
-  const session = useAuthStore((s) => s.session)
-
-  const rawName = session?.user?.user_metadata?.full_name as string | undefined
-  const emailPrefix = session?.user?.email?.split('@')[0] ?? 'Partenaire'
-  const displayName = rawName ?? emailPrefix
+  const displayName = useDisplayName('Partenaire')
+  const HAS_PENDING = MOCK_KPIS.toComplete > 0
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
@@ -35,15 +30,17 @@ export default function PartnerDashboard() {
         <Text className="text-sm text-gray-500 mt-1">Tableau de bord partenaire</Text>
 
         {/* Health banner */}
-        <View
-          className={`rounded-xl p-4 mb-6 mt-4 ${HAS_PENDING ? 'bg-warning' : 'bg-teal-500'}`}
-        >
-          <Text className="text-white font-semibold text-sm">
-            {HAS_PENDING
-              ? `${MOCK_KPIS.toComplete} dossiers en attente`
-              : 'Tout est à jour'}
-          </Text>
-        </View>
+        {HAS_PENDING ? (
+          <View className="rounded-xl p-4 mb-6 mt-4 bg-warning">
+            <Text className="text-white font-semibold text-sm">
+              {MOCK_KPIS.toComplete} dossiers en attente
+            </Text>
+          </View>
+        ) : (
+          <View className="rounded-xl p-4 mb-6 mt-4 bg-teal-500">
+            <Text className="text-white font-semibold text-sm">Tout est à jour</Text>
+          </View>
+        )}
 
         {/* KPI grid */}
         <View className="flex-row flex-wrap gap-3 mb-6">

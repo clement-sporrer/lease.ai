@@ -20,7 +20,7 @@ type StatusBadgeProps = {
 }
 
 export function StatusBadge({ status, large = false }: StatusBadgeProps) {
-  const config = STATUS_MAP[status] ?? { bg: 'bg-gray-100', text: 'text-gray-600', label: status }
+  const config = STATUS_MAP[status] ?? { bg: 'bg-gray-100', text: 'text-gray-600', label: status.replace(/_/g, ' ') }
 
   return (
     <View className={`${config.bg} rounded-full ${large ? 'px-8 py-3' : 'px-3 py-1'} self-start`}>
