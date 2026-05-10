@@ -114,6 +114,13 @@ async def transition_deal_status(
 async def get_deal_timeline(
     deal_id: uuid.UUID,
     current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ) -> dict:
-    del deal_id, current_user
-    return {"data": [], "meta": {"total": 0}}
+    del current_user
+    from app.schemas.admin import AuditEventResponse
+    from app.services import audit_service as _audit_service
+    events = await _audit_service.get_timeline(db, deal_id)
+    return {
+        "data": [AuditEventResponse.model_validate(e).model_dump(mode="json") for e in events],
+        "meta": {"total": len(events)},
+    }
