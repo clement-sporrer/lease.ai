@@ -46,6 +46,7 @@ async def test_get_queue_returns_deals(make_token, test_ec_key):
                 )
     assert response.status_code == 200
     assert len(response.json()["data"]) == 2
+    assert response.json()["meta"]["total"] == 2
 
 
 @pytest.mark.asyncio
@@ -112,6 +113,27 @@ async def test_pre_approve_returns_deal(make_token, test_ec_key):
                 )
     assert response.status_code == 200
     assert response.json()["data"]["status"] == "pre_approved"
+
+
+@pytest.mark.asyncio
+async def test_pre_approve_surfaces_reason_required_when_override_missing(make_token, test_ec_key):
+    from app.core.errors import AppError
+
+    token = make_token(_USER_ADMIN_ID, "admin")
+    with patch(
+        "app.routers.admin.admin_service.pre_approve",
+        new_callable=AsyncMock,
+        side_effect=AppError(422, "REASON_REQUIRED", "justification required for manual override"),
+    ):
+        with patch("app.core.auth._get_jwks", new_callable=AsyncMock, return_value=test_ec_key["jwks"]):
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                response = await client.post(
+                    f"/admin/deals/{uuid.uuid4()}/pre-approve",
+                    json={"justification": None},
+                    headers={"Authorization": f"Bearer {token}"},
+                )
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "REASON_REQUIRED"
 
 
 @pytest.mark.asyncio
