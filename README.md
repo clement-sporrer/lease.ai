@@ -4,6 +4,10 @@ AI-native IT leasing operator. Monorepo: mobile (Expo), web back-office (Next.js
 
 End-to-end deal lifecycle: partner creates deal → SIREN enrichment → quote upload → indicative pricing → risk scoring → admin review → refi package → financier decision → firm offer → contract → signature → activation → schedule → invoice → payment → CFO portfolio.
 
+## Demo
+
+[Watch the demo video](https://drive.google.com/file/d/1ESDXW7RShyQ8dmkSAT62xv5SAxlVALXp/view?usp=sharing)
+
 ## Architecture
 
 ```
