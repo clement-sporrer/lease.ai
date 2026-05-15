@@ -5,15 +5,13 @@ from datetime import date
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.models.company import Company
 
-_LEGAL_NAMES = [
-    "ACME SAS",
-    "DELTA TECH",
-    "NOVA SOLUTIONS",
-    "ORION SYSTEMS",
-    "APEX GROUP",
-]
+
+# --- mock fallback (deterministic from SIREN) ---
+
+_LEGAL_NAMES = ["ACME SAS", "DELTA TECH", "NOVA SOLUTIONS", "ORION SYSTEMS", "APEX GROUP"]
 _LEGAL_STATUSES = ["SAS", "SARL", "SA", "EURL"]
 _ACTIVITIES = ["6201Z", "6202A", "4741Z", "7311Z", "6311Z"]
 _CITIES = [
@@ -23,7 +21,7 @@ _CITIES = [
 ]
 
 
-def _pick(identifier: str, items: list[object], salt: str = "") -> object:
+def _pick(identifier: str, items: list, salt: str = "") -> object:
     digest = hashlib.md5(f"{identifier}{salt}".encode(), usedforsecurity=False).hexdigest()
     return items[int(digest[:8], 16) % len(items)]
 
@@ -34,9 +32,21 @@ def _normalize_siren_or_siret(value: str) -> tuple[str, str | None]:
     return value, None
 
 
-def _mock_creation_date(identifier: str) -> date:
-    offset_years = 2 + (int(identifier[-1]) % 9)
-    return date(date.today().year - offset_years, 3, 15)
+def _mock_data(siren: str, siret: str | None) -> dict:
+    offset_years = 2 + (int(siren[-1]) % 9)
+    return {
+        "siren": siren,
+        "siret": siret,
+        "legal_name": str(_pick(siren, _LEGAL_NAMES)),
+        "trade_name": None,
+        "address": _pick(siren, _CITIES, salt="addr"),
+        "activity_code": str(_pick(siren, _ACTIVITIES, salt="act")),
+        "creation_date": date(date.today().year - offset_years, 3, 15),
+        "legal_status": str(_pick(siren, _LEGAL_STATUSES, salt="ls")),
+        "is_active": True,
+        "enrichment_source": "mock",
+        "enrichment_payload": {"source": "mock_pappers", "lookup": siren},
+    }
 
 
 async def enrich_and_upsert(db: AsyncSession, siren_or_siret: str) -> Company:
@@ -51,20 +61,16 @@ async def enrich_and_upsert(db: AsyncSession, siren_or_siret: str) -> Company:
             await db.refresh(existing)
         return existing
 
-    company = Company(
-        id=uuid.uuid4(),
-        siren=siren,
-        siret=siret,
-        legal_name=str(_pick(siren, _LEGAL_NAMES)),
-        trade_name=None,
-        address=_pick(siren, _CITIES, salt="addr"),
-        activity_code=str(_pick(siren, _ACTIVITIES, salt="act")),
-        creation_date=_mock_creation_date(siren),
-        legal_status=str(_pick(siren, _LEGAL_STATUSES, salt="ls")),
-        is_active=True,
-        enrichment_source="mock",
-        enrichment_payload={"source": "mock_pappers", "lookup": siren_or_siret},
-    )
+    # Attempt real Pappers lookup
+    data: dict | None = None
+    if settings.use_real_pappers:
+        from app.services.pappers_service import fetch_company
+        data = await fetch_company(siren)
+
+    if data is None:
+        data = _mock_data(siren, siret)
+
+    company = Company(id=uuid.uuid4(), **data)
     db.add(company)
     await db.commit()
     await db.refresh(company)
