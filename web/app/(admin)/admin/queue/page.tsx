@@ -15,15 +15,19 @@ export default async function AdminQueuePage() {
   }
 
   let queueData: QueueResponse = { data: [], meta: { total: 0 } }
+  let apiError = false
   try {
     queueData = await apiFetch<QueueResponse>('/admin/queue', session.access_token)
   } catch {
-    // API unavailable — show empty queue
+    apiError = true
   }
 
   return (
     <DashboardShell role="admin" title="File d'attente" subtitle={`${queueData.meta.total} dossier(s) à traiter`}>
       <div className="bg-white rounded-xl border border-gray-200 p-6">
+        {apiError && (
+          <p className="text-sm text-red-500 mb-4">Impossible de charger la file d'attente.</p>
+        )}
         <DealQueue deals={queueData.data} />
       </div>
     </DashboardShell>

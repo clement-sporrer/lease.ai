@@ -47,6 +47,7 @@ export async function recordFinancierDecision(
       { method: 'POST', body: JSON.stringify({ decision, reason }) }
     )
     revalidatePath('/financier/packages')
+    revalidatePath(`/financier/packages/${packageId}`)
     return result
   } catch (err) {
     return { error: err instanceof Error ? err.message : 'Failed to record decision' }

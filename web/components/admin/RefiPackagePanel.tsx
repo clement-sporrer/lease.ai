@@ -71,7 +71,11 @@ export function RefiPackagePanel({ deal, existingPackage }: Props) {
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-500">Durée</span>
-            <span className="text-sm font-mono">{pkg.duration_months ?? '—'} mois</span>
+            <span className="text-sm font-mono">
+              {pkg.duration_months !== null && pkg.duration_months !== undefined
+                ? `${pkg.duration_months} mois`
+                : '—'}
+            </span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-500">Loyer mensuel</span>

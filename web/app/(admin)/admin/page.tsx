@@ -77,6 +77,7 @@ export default async function AdminDashboard() {
   }
 
   let deals: QueueDeal[] = []
+  let apiError = false
   try {
     const result = await apiFetch<{ data: QueueDeal[]; meta: { total: number } }>(
       '/admin/queue',
@@ -84,7 +85,7 @@ export default async function AdminDashboard() {
     )
     deals = result.data
   } catch {
-    // API unavailable — show empty state rather than crash
+    apiError = true
   }
 
   const queueCount = deals.length
@@ -107,7 +108,9 @@ export default async function AdminDashboard() {
 
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="text-base font-semibold text-navy-900 mb-4">Dossiers en attente</h2>
-        {recent.length === 0 ? (
+        {apiError ? (
+          <p className="text-sm text-red-500">Impossible de charger la file d'attente.</p>
+        ) : recent.length === 0 ? (
           <p className="text-sm text-gray-400">Aucun dossier en attente.</p>
         ) : (
           <table className="w-full text-sm border-collapse">
