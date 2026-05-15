@@ -98,3 +98,4 @@ async def test_financier_decision_rejected_without_reason_returns_422(make_token
                 headers={"Authorization": f"Bearer {token}"},
             )
     assert res.status_code == 422
+    assert res.json()["error"]["code"] == "REASON_REQUIRED"

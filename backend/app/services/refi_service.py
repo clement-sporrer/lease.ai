@@ -65,6 +65,13 @@ async def list_packages_for_deal(db: AsyncSession, deal_id: uuid.UUID) -> list[R
     return list(result.scalars().all())
 
 
+async def list_all_packages(db: AsyncSession) -> list[RefiPackage]:
+    result = await db.execute(
+        select(RefiPackage).order_by(RefiPackage.created_at.desc())
+    )
+    return list(result.scalars().all())
+
+
 def _to_uuid(value: str) -> uuid.UUID:
     """Convert a string to UUID, raising AppError(500) on invalid input."""
     try:

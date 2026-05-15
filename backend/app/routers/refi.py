@@ -1,12 +1,10 @@
 import uuid
 
 from fastapi import APIRouter, Depends
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_user
 from app.core.db import get_db
-from app.models.refi_package import RefiPackage
 from app.schemas.refi import FinancierDecisionRequest, FinancierDecisionResponse, RefiPackageResponse
 from app.services import deal_service, refi_service
 
@@ -39,11 +37,7 @@ async def list_all_refi_packages(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    """Returns all packages ordered by created_at desc. Financier sees all sent/decided packages."""
-    result = await db.execute(
-        select(RefiPackage).order_by(RefiPackage.created_at.desc())
-    )
-    packages = list(result.scalars().all())
+    packages = await refi_service.list_all_packages(db)
     return {"data": [RefiPackageResponse.model_validate(p).model_dump(mode="json") for p in packages]}
 
 
