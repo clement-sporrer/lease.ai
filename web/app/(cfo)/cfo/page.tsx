@@ -4,22 +4,22 @@ import { DashboardShell } from '@/components/dashboard/DashboardShell'
 import { StatCard } from '@/components/dashboard/StatCard'
 
 interface PortfolioData {
-  total_exposure_cents: number
-  active_deals: number
-  monthly_rent_cents: number
-  default_rate: number
+  active_leases: number
+  pipeline_deals: number
+  total_commitment_eur: number
+  cash_collected_month_eur: number
 }
 
-function formatEuros(cents: number): string {
-  return (cents / 100).toLocaleString('fr-FR', {
+interface PortfolioResponse {
+  data: PortfolioData
+}
+
+function formatEuros(eur: number): string {
+  return eur.toLocaleString('fr-FR', {
     style: 'currency',
     currency: 'EUR',
     maximumFractionDigits: 0,
   })
-}
-
-function formatDefaultRate(rate: number): string {
-  return (rate * 100).toFixed(1) + '%'
 }
 
 export default async function CfoDashboard() {
@@ -34,15 +34,16 @@ export default async function CfoDashboard() {
 
   let portfolio: PortfolioData | null = null
   try {
-    portfolio = await apiFetch<PortfolioData>('/dashboards/cfo/portfolio', session.access_token)
+    const result = await apiFetch<PortfolioResponse>('/dashboards/cfo/portfolio', session.access_token)
+    portfolio = result.data
   } catch {
     // API unavailable — fall back to dashes rather than crashing
   }
 
-  const totalExposure = portfolio ? formatEuros(portfolio.total_exposure_cents) : '—'
-  const monthlyRent = portfolio ? formatEuros(portfolio.monthly_rent_cents) : '—'
-  const defaultRate = portfolio ? formatDefaultRate(portfolio.default_rate) : '—'
-  const activeDeals = portfolio ? String(portfolio.active_deals) : '—'
+  const totalExposure = portfolio ? formatEuros(portfolio.total_commitment_eur) : '—'
+  const monthlyRent = portfolio ? formatEuros(portfolio.cash_collected_month_eur) : '—'
+  const defaultRate = '—'
+  const activeDeals = portfolio ? String(portfolio.active_leases) : '—'
 
   return (
     <DashboardShell role="cfo" title="Tableau de bord" subtitle="Vue consolidée du portefeuille">
