@@ -88,13 +88,14 @@ Chaque intégration suit ce protocole avant de passer en production :
 
 #### Semaine 1 — Backend refi + financier
 - Modèles SQLAlchemy : `RefiPackage`, `FinancierDecision`, `Offer`
+  - `Offer` doit supporter nativement le versioning : champs `version: int` (incrémental) + `is_active: bool`. Générer une V2 ne touche pas la V1 — on désactive l'ancienne, on crée la nouvelle. Critique en leasing où le broker demande souvent un ajustement de loyer post-offre.
 - Migrations Alembic
 - Endpoints :
   - `POST /deals/{id}/refi-packages` — crée et associe le package
   - `POST /refi-packages/{id}/send` — passe le deal en `refi_package_ready`
   - `POST /refi-packages/{id}/decision` — approve (→ `financier_approved`) ou reject (→ `financier_rejected`)
-  - `POST /deals/{id}/offers` — génère l'offre ferme (→ `firm_offer_generated`)
-- Tests unitaires sur chaque service (transitions validées)
+  - `POST /deals/{id}/offers` — génère l'offre ferme (→ `firm_offer_generated`) ; si une offre active existe déjà, la désactive et crée version+1
+- Tests unitaires sur chaque service (transitions validées, versioning offre inclus)
 
 #### Semaine 2 — Web admin polish + refi
 - Admin deal detail — polish complet (typography, spacing, status badge, timeline)
@@ -112,6 +113,7 @@ Chaque intégration suit ce protocole avant de passer en production :
 - CFO dashboard sur vraies données (encours, loyers mois, taux défaut, distribution risque)
 - **Pappers API** branché sur enrichissement SIREN (avec fallback mock si timeout)
 - **Mistral API** branché sur extraction devis PDF (champs structurés : items, montants, fournisseur)
+- **Badges de provenance** sur toutes les données enrichies : badge "Source : Pappers" sur les champs company enrichis, badge "Extrait par Mistral" sur chaque line-item du devis. Stocké en base (`enrichment_source`, `extraction_source`) — pas affiché depuis une constante. Les experts secteur font confiance aux données quand ils savent d'où elles viennent.
 - Seed data réaliste : 3 dossiers à stades différents (draft, refi_package_ready, financier_approved)
 - Répétition du script démo (10 min chrono)
 
@@ -162,7 +164,8 @@ Chaque intégration suit ce protocole avant de passer en production :
 | Étape | Rôle | Action | Ce que l'expert voit |
 |---|---|---|---|
 | 1 | Admin | Ouvre la queue | Liste des dossiers avec statuts, risk bands, priorités |
-| 2 | Admin | Ouvre Globex Inc. | Fiche complète : company (via Pappers), devis (extrait par Mistral), risk score A, documents validés |
+| 2 | Admin | Ouvre Globex Inc. | Fiche company (badge "Source : Pappers"), risk score A, documents validés |
+| 2b | Admin | Drag-and-drop PDF devis en direct | Mistral extrait les items (désignations, quantités, montants) en < 5s — badge "Extrait par Mistral" apparaît sur chaque ligne. Zéro saisie visible. |
 | 3 | Admin | Clique "Pré-approuver" | Statut passe à `pre_approved`, timeline s'enrichit |
 | 4 | Admin | Clique "Générer package refi" | Package créé, deal passe à `refi_package_ready` |
 | 5 | Financier | Ouvre sa queue | Le package Globex apparaît, avec assets, risk, pricing |
@@ -171,7 +174,7 @@ Chaque intégration suit ce protocole avant de passer en production :
 | 8 | Admin | Génère l'offre | Offre ferme créée, deal passe à `firm_offer_generated` |
 | 9 | CFO | Ouvre le dashboard | Pipeline actif, deal Globex visible, encours mis à jour |
 
-**Durée totale :** 8–10 minutes. Pas de saisie de formulaire. Chaque action change la base.
+**Durée totale :** 8–10 minutes. L'upload devis en direct est le moment "Wahou" — il prouve que l'IA travaille en live, pas sur du hardcodé. Chaque action change la base.
 
 ---
 
