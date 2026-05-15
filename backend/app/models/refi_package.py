@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, Integer, Numeric, String, Text, func
+from sqlalchemy import BigInteger, CheckConstraint, DateTime, ForeignKey, Integer, Numeric, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -35,12 +35,15 @@ class RefiPackage(Base):
 
 class FinancierDecision(Base):
     __tablename__ = "financier_decisions"
+    __table_args__ = (
+        CheckConstraint("decision IN ('approved', 'rejected')", name="ck_financier_decision_value"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     refi_package_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("refi_packages.id", ondelete="CASCADE"), nullable=False, unique=True
     )
-    decision: Mapped[str] = mapped_column(String(20), nullable=False)  # "approved" | "rejected"
+    decision: Mapped[str] = mapped_column(String(20), nullable=False)
     reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     decided_by_user_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("profiles.id", ondelete="SET NULL"), nullable=True
