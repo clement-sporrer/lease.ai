@@ -40,13 +40,14 @@ export default async function DealReviewPage({ params }: Props) {
   let timeline: TimelineResponse = { data: [], meta: { total: 0 } }
   let refiPackage: RefiPackage | null = null
   let activeOffer: Offer | null = null
+  let company: { name?: string; siren?: string; sector?: string; creation_date?: string } | null = null
 
   try {
     const [dealRes, checklistRes, timelineRes, refiRes] = await Promise.all([
       apiFetch<{ data: Deal }>(`/deals/${id}`, token),
       apiFetch<{ data: DealChecklist }>(`/admin/deals/${id}/checklist`, token),
       apiFetch<TimelineResponse>(`/deals/${id}/timeline`, token),
-      apiFetch<{ data: RefiPackage[] }>(`/refi-packages?deal_id=${id}`, token),
+      apiFetch<{ data: RefiPackage[] }>(`/deals/${id}/refi-packages`, token),
     ])
     deal = dealRes.data
     checklist = checklistRes.data
@@ -56,12 +57,25 @@ export default async function DealReviewPage({ params }: Props) {
     // API fetch failed — deal will be null, show error state below
   }
 
-  // Fetch active offer separately — 404 is expected when no offer exists
+  // Fetch company and active offer separately — both depend on deal being loaded
   if (deal) {
-    try {
-      activeOffer = await apiFetch<Offer>(`/deals/${id}/offers/active`, token)
-    } catch {
-      activeOffer = null
+    const [companyResult, offerResult] = await Promise.allSettled([
+      apiFetch<{ data: { legal_name: string; trade_name: string | null; siren: string; naf_code: string | null; creation_date: string | null } }>(`/companies/${deal.company_id}`, token),
+      apiFetch<Offer>(`/deals/${id}/offers/active`, token),
+    ])
+
+    if (companyResult.status === 'fulfilled') {
+      const c = companyResult.value.data
+      company = {
+        name: c.trade_name ?? c.legal_name,
+        siren: c.siren,
+        sector: c.naf_code ?? undefined,
+        creation_date: c.creation_date ?? undefined,
+      }
+    }
+
+    if (offerResult.status === 'fulfilled') {
+      activeOffer = offerResult.value
     }
   }
 
@@ -73,7 +87,7 @@ export default async function DealReviewPage({ params }: Props) {
     <DashboardShell role="admin" title={`Dossier ${deal.public_id}`}>
       <div className="max-w-4xl">
         <DealReviewHeader deal={deal} />
-        <CompanySummary />
+        <CompanySummary enrichment={company ?? undefined} />
         <QuoteSummary deal={deal} />
         <RiskSummary deal={deal} />
         <section className="mt-6 space-y-4">
