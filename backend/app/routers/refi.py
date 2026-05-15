@@ -1,10 +1,13 @@
 import uuid
 
 from fastapi import APIRouter, Depends
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_user
 from app.core.db import get_db
+from app.core.errors import AppError
+from app.models.refi_package import FinancierDecision
 from app.schemas.refi import FinancierDecisionRequest, FinancierDecisionResponse, RefiPackageResponse
 from app.services import deal_service, refi_service
 
@@ -74,3 +77,19 @@ async def record_financier_decision(
         db, pkg, deal, body.decision, body.reason, current_user["user_id"]
     )
     return {"data": FinancierDecisionResponse.model_validate(dec).model_dump(mode="json")}
+
+
+@router.get("/refi-packages/{package_id}/decisions")
+async def list_decisions(
+    package_id: uuid.UUID,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    pkg = await refi_service.get_package(db, package_id)
+    if pkg is None:
+        raise AppError(404, "NOT_FOUND", "Package not found")
+    result = await db.execute(
+        select(FinancierDecision).where(FinancierDecision.package_id == package_id)
+    )
+    decisions = list(result.scalars().all())
+    return {"data": [FinancierDecisionResponse.model_validate(d).model_dump(mode="json") for d in decisions]}

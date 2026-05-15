@@ -109,7 +109,7 @@ async def seed() -> None:
             currency="EUR",
             duration_months=36,
             risk_score=72.5,
-            risk_band="B",
+            risk_band="A",
             monthly_payment_cents=250_000,
             created_at=now,
             updated_at=now,
