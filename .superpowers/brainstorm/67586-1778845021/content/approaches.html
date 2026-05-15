@@ -1,0 +1,66 @@
+<h2>3 approches pour la roadmap demo</h2>
+<p class="subtitle">Objectif : "C'est complet — tout le cycle en un seul outil" — 2–4 semaines — démo guidée multi-profil</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Le récit linéaire</h3>
+      <p>Un seul dossier, pré-seedé, qui traverse toutes les étapes dans l'ordre. Tu changes de rôle au fil de la démo : partner → admin → financier → ops → CFO. Chaque expert voit son moment.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pour</h4><ul>
+          <li>Raconte naturellement "tout le cycle"</li>
+          <li>Facile à suivre pour un public non-technique</li>
+          <li>Chaque profil a un moment fort</li>
+        </ul></div>
+        <div class="cons"><h4>Contre</h4><ul>
+          <li>Nécessite des écrans à tous les stades</li>
+          <li>Ambitieux en 2–4 semaines</li>
+          <li>Backend à construire pour refi → CFO</li>
+        </ul></div>
+      </div>
+      <p><strong>Focus :</strong> ~7 écrans clés, tous en lecture sur données seedées</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>3 rôles en profondeur</h3>
+      <p>Pick 3 rôles ultra-décisionnels (Admin/Risk + Financier + CFO), construis chacun en profondeur avec des données riches. Les autres rôles sont mentionnés mais pas montrés.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pour</h4><ul>
+          <li>Moins d'écrans = plus de polish</li>
+          <li>Faisable confortablement en 2–4 semaines</li>
+          <li>Chaque écran est impressionnant</li>
+        </ul></div>
+        <div class="cons"><h4>Contre</h4><ul>
+          <li>Moins "complet" — contredit l'objectif B</li>
+          <li>Les experts ops/revendeurs ne se voient pas dans l'outil</li>
+        </ul></div>
+      </div>
+      <p><strong>Focus :</strong> 3 rôles × 3–4 écrans chacun, très polished</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Le récit linéaire avec raccourcis stratégiques ★ Recommandé</h3>
+      <p>Variante de A : données pré-seedées à chaque stade, écrans en lecture seule (pas de formulaires pendant la démo). On construit d'abord les vues les plus impressionnantes, on "saute" les étapes à faible valeur visuelle.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pour</h4><ul>
+          <li>Raconte "tout le cycle" — objectif B atteint</li>
+          <li>Faisable en 2–4 semaines (pas de forms complexes)</li>
+          <li>Aucun risque pendant la démo — données fixes</li>
+          <li>Backend simplifié : endpoints GET suffisent</li>
+        </ul></div>
+        <div class="cons"><h4>Contre</h4><ul>
+          <li>Moins interactif (mais la démo est guidée de toute façon)</li>
+          <li>Il faut choisir les raccourcis avec soin</li>
+        </ul></div>
+      </div>
+      <p><strong>Focus :</strong> 5 rôles × 1–2 écrans clés chacun, données seedées réalistes, navigation fluide</p>
+    </div>
+  </div>
+</div>
