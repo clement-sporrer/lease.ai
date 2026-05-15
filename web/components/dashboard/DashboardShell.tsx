@@ -13,27 +13,17 @@ type Props = {
 
 const NAV_ITEMS: Record<Role, NavItem[]> = {
   admin: [
-    { label: 'Dashboard', href: '/admin' },
-    { label: 'Dossiers', href: '/admin/deals' },
+    { label: 'Tableau de bord', href: '/admin' },
     { label: "File d'attente", href: '/admin/queue' },
-    { label: 'Utilisateurs', href: '/admin/users' },
   ],
   ops: [
-    { label: 'Dashboard', href: '/ops' },
-    { label: 'Dossiers', href: '/ops/deals' },
-    { label: 'Tâches', href: '/ops/tasks' },
-    { label: 'Documents', href: '/ops/documents' },
+    { label: 'Tableau de bord', href: '/ops' },
   ],
   financier: [
-    { label: 'Dashboard', href: '/financier' },
-    { label: 'Packages refi', href: '/financier/packages' },
-    { label: 'Décisions', href: '/financier/decisions' },
+    { label: 'Tableau de bord', href: '/financier' },
   ],
   cfo: [
-    { label: 'Dashboard', href: '/cfo' },
-    { label: 'Portfolio', href: '/cfo/portfolio' },
-    { label: 'Indicateurs', href: '/cfo/kpis' },
-    { label: 'Rapports', href: '/cfo/reports' },
+    { label: 'Tableau de bord', href: '/cfo' },
   ],
 }
 
