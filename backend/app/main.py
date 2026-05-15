@@ -5,7 +5,7 @@ from fastapi.responses import Response
 from app.core.config import settings
 from app.core.errors import AppError, app_error_handler
 from app.errors import install_error_handlers
-from app.routers import admin, auth, companies, deals, documents, me, pricing, quotes, risk
+from app.routers import admin, auth, companies, deals, documents, me, pricing, quotes, refi, risk
 
 app = FastAPI(title="LeaseAI API", version="0.2.0")
 app.add_exception_handler(AppError, app_error_handler)
@@ -27,6 +27,7 @@ app.include_router(documents.router)
 app.include_router(me.router)
 app.include_router(pricing.router)
 app.include_router(quotes.router)
+app.include_router(refi.router)
 app.include_router(risk.router)
 
 
