@@ -19,7 +19,7 @@ async def generate_offer(db: AsyncSession, deal_id: uuid.UUID, user_id: str) -> 
             409,
             "INVALID_STATE",
             f"Cannot generate offer from status {deal.status!r}",
-            {"current_status": deal.status, "allowed": list(_ALLOWED_STATUSES)},
+            {"current_status": deal.status, "allowed": sorted(_ALLOWED_STATUSES)},
         )
     result = await db.execute(select(Offer).where(Offer.deal_id == deal_id))
     existing = list(result.scalars().all())
@@ -40,8 +40,7 @@ async def generate_offer(db: AsyncSession, deal_id: uuid.UUID, user_id: str) -> 
     db.add(offer)
     if deal.status == "financier_approved":
         await deal_service.transition_deal(db, deal_id, "firm_offer_generated")
-    else:
-        await db.commit()
+    await db.commit()
     await db.refresh(offer)
     return offer
 

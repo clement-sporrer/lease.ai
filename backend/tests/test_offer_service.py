@@ -21,8 +21,10 @@ async def test_generate_offer_requires_financier_approved():
     db = AsyncMock()
     with patch("app.services.offer_service.deal_service.get_deal", new=AsyncMock(return_value=deal)):
         from app.services import offer_service
-        with pytest.raises(Exception):
+        from app.core.errors import AppError
+        with pytest.raises(AppError) as exc_info:
             await offer_service.generate_offer(db, deal.id, "user_admin")
+    assert exc_info.value.code == "INVALID_STATE"
 
 
 @pytest.mark.anyio
@@ -50,10 +52,11 @@ async def test_generate_offer_v2_deactivates_v1():
     db.execute = AsyncMock(return_value=MagicMock(scalars=MagicMock(return_value=MagicMock(all=MagicMock(return_value=[existing])))))
     with (
         patch("app.services.offer_service.deal_service.get_deal", new=AsyncMock(return_value=deal)),
-        patch("app.services.offer_service.deal_service.transition_deal", new=AsyncMock(return_value=deal)),
+        patch("app.services.offer_service.deal_service.transition_deal", new=AsyncMock()) as mock_transition,
     ):
         from app.services import offer_service
         offer = await offer_service.generate_offer(db, deal.id, "user_admin")
     assert existing.is_active is False
     assert offer.version == 2
     assert offer.is_active is True
+    mock_transition.assert_not_awaited()
