@@ -78,3 +78,28 @@ async def test_get_active_offer_returns_404_when_none(make_token, test_ec_key):
             )
     assert res.status_code == 404
     assert res.json()["error"]["code"] == "OFFER_NOT_FOUND"
+
+
+@pytest.mark.anyio
+async def test_list_offers_returns_200(make_token, test_ec_key):
+    token = make_token(sub=str(uuid.uuid4()), active_role="admin")
+    offer1 = _make_offer()
+    offer1.version = 2
+    offer1.is_active = True
+    offer2 = _make_offer()
+    offer2.deal_id = offer1.deal_id
+    offer2.version = 1
+    offer2.is_active = False
+
+    with (
+        patch("app.routers.offers.offer_service.list_offers", new=AsyncMock(return_value=[offer1, offer2])),
+        patch("app.core.auth._get_jwks", new=AsyncMock(return_value=test_ec_key["jwks"])),
+    ):
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+            res = await ac.get(
+                f"/deals/{offer1.deal_id}/offers",
+                headers={"Authorization": f"Bearer {token}"},
+            )
+    assert res.status_code == 200
+    assert isinstance(res.json()["data"], list)
+    assert len(res.json()["data"]) == 2
