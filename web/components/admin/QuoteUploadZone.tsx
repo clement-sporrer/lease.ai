@@ -53,15 +53,17 @@ export function QuoteUploadZone({ dealId, onSuccess }: Props) {
         return
       }
 
+      const formData = new FormData()
+      formData.append('file', file)
+
       const response = await fetch(
         `${API_BASE}/deals/${dealId}/quotes/upload-and-extract`,
         {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/pdf',
           },
-          body: file,
+          body: formData,
         }
       )
 
@@ -74,8 +76,12 @@ export function QuoteUploadZone({ dealId, onSuccess }: Props) {
         return
       }
 
-      const data = (await response.json()) as ExtractionResult
-      setResult(data)
+      const json = await response.json()
+      const payload = json?.data
+      setResult({
+        extraction_source: payload?.extraction_source ?? null,
+        line_items: payload?.extraction_payload?.items ?? [],
+      })
       onSuccess?.()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur inattendue est survenue.')
