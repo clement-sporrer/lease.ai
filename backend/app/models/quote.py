@@ -22,6 +22,7 @@ class Quote(Base):
     category: Mapped[str | None] = mapped_column(String(100), nullable=True)
     extraction_status: Mapped[str] = mapped_column(String(50), nullable=False, server_default="pending")
     extraction_payload: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    extraction_source: Mapped[str | None] = mapped_column(String(50), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
