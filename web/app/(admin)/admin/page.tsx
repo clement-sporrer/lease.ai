@@ -79,7 +79,7 @@ export default async function AdminDashboard() {
   let deals: QueueDeal[] = []
   try {
     const result = await apiFetch<{ data: QueueDeal[]; meta: { total: number } }>(
-      '/admin/deals/queue',
+      '/admin/queue',
       session.access_token,
     )
     deals = result.data

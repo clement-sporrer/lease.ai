@@ -40,7 +40,7 @@ export default async function DealReviewPage({ params }: Props) {
   let timeline: TimelineResponse = { data: [], meta: { total: 0 } }
   let refiPackage: RefiPackage | null = null
   let activeOffer: Offer | null = null
-  let company: { name?: string; siren?: string; sector?: string; creation_date?: string } | null = null
+  let company: { name?: string; siren?: string; sector?: string; creation_date?: string; enrichment_source?: string } | null = null
 
   try {
     const [dealRes, checklistRes, timelineRes, refiRes] = await Promise.all([
@@ -60,7 +60,7 @@ export default async function DealReviewPage({ params }: Props) {
   // Fetch company and active offer separately — both depend on deal being loaded
   if (deal) {
     const [companyResult, offerResult] = await Promise.allSettled([
-      apiFetch<{ data: { legal_name: string; trade_name: string | null; siren: string; naf_code: string | null; creation_date: string | null } }>(`/companies/${deal.company_id}`, token),
+      apiFetch<{ data: { legal_name: string; trade_name: string | null; siren: string; naf_code: string | null; creation_date: string | null; enrichment_source: string | null } }>(`/companies/${deal.company_id}`, token),
       apiFetch<Offer>(`/deals/${id}/offers/active`, token),
     ])
 
@@ -71,6 +71,7 @@ export default async function DealReviewPage({ params }: Props) {
         siren: c.siren,
         sector: c.naf_code ?? undefined,
         creation_date: c.creation_date ?? undefined,
+        enrichment_source: c.enrichment_source ?? undefined,
       }
     }
 

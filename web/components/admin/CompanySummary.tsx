@@ -1,3 +1,5 @@
+import { ProvenanceBadge } from '@/components/shared/ProvenanceBadge'
+
 interface CompanyData {
   name?: string
   siren?: string
@@ -5,14 +7,20 @@ interface CompanyData {
   creation_date?: string
   is_recent?: boolean
   is_inactive?: boolean
+  enrichment_source?: string
 }
 
 export function CompanySummary({ enrichment }: { enrichment?: CompanyData }) {
   return (
     <div className="mb-4 rounded-xl border border-gray-200 bg-white p-6">
-      <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">
-        Entreprise
-      </h3>
+      <div className="mb-4 flex items-center gap-2">
+        <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-700">
+          Entreprise
+        </h3>
+        {enrichment?.enrichment_source && (
+          <ProvenanceBadge source={enrichment.enrichment_source} />
+        )}
+      </div>
       {enrichment ? (
         <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
           <div>

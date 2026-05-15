@@ -104,7 +104,7 @@ async def seed() -> None:
             id=uuid.uuid4(),
             public_id="D-2026-0001",
             company_id=globex.id,
-            status="financier_approved",
+            status="internal_review",
             amount_cents=8_550_000,
             currency="EUR",
             duration_months=36,
@@ -149,7 +149,25 @@ async def seed() -> None:
         db.add(deal3)
 
         await db.commit()
-        print("Demo seed complete: 3 companies, 3 deals at D-2026-0001..0003")
+
+        from app.models.document import Document
+
+        for doc_type, file_name in [
+            ("quote", "devis_laptops_globex.pdf"),
+            ("id_document", "kbis_globex.pdf"),
+            ("rib", "rib_globex.pdf"),
+        ]:
+            db.add(
+                Document(
+                    id=uuid.uuid4(),
+                    deal_id=deal1.id,
+                    type=doc_type,
+                    file_name=file_name,
+                    status="validated",
+                )
+            )
+        await db.commit()
+        print("Demo seed complete: 3 companies, 3 deals at D-2026-0001..0003, 3 documents for Globex")
 
     await engine.dispose()
 
