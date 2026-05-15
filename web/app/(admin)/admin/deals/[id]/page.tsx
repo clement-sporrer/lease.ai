@@ -40,28 +40,35 @@ export default async function DealReviewPage({ params }: Props) {
   let timeline: TimelineResponse = { data: [], meta: { total: 0 } }
   let refiPackage: RefiPackage | null = null
   let activeOffer: Offer | null = null
-  let company: { name?: string; siren?: string; sector?: string; creation_date?: string; enrichment_source?: string } | null = null
+  let company: { name?: string; siren?: string; sector?: string; creation_date?: string; enrichment_source?: string; is_inactive?: boolean } | null = null
 
-  try {
-    const [dealRes, checklistRes, timelineRes, refiRes] = await Promise.all([
-      apiFetch<{ data: Deal }>(`/deals/${id}`, token),
-      apiFetch<{ data: DealChecklist }>(`/admin/deals/${id}/checklist`, token),
-      apiFetch<TimelineResponse>(`/deals/${id}/timeline`, token),
-      apiFetch<{ data: RefiPackage[] }>(`/deals/${id}/refi-packages`, token),
-    ])
-    deal = dealRes.data
-    checklist = checklistRes.data
-    timeline = timelineRes
-    refiPackage = refiRes.data[0] ?? null
-  } catch {
-    // API fetch failed — deal will be null, show error state below
-  }
+  const [dealResult, checklistResult, timelineResult, refiResult] = await Promise.allSettled([
+    apiFetch<{ data: Deal }>(`/deals/${id}`, token),
+    apiFetch<{ data: DealChecklist }>(`/admin/deals/${id}/checklist`, token),
+    apiFetch<TimelineResponse>(`/deals/${id}/timeline`, token),
+    apiFetch<{ data: RefiPackage[] }>(`/deals/${id}/refi-packages`, token),
+  ])
+
+  if (dealResult.status === 'fulfilled') deal = dealResult.value.data
+  if (checklistResult.status === 'fulfilled') checklist = checklistResult.value.data
+  if (timelineResult.status === 'fulfilled') timeline = timelineResult.value
+  if (refiResult.status === 'fulfilled') refiPackage = refiResult.value.data[0] ?? null
 
   // Fetch company and active offer separately — both depend on deal being loaded
   if (deal) {
+    type CompanyApiResponse = {
+      legal_name: string
+      trade_name: string | null
+      siren: string
+      activity_code: string | null
+      creation_date: string | null
+      enrichment_source: string | null
+      is_active: boolean
+    }
+
     const [companyResult, offerResult] = await Promise.allSettled([
-      apiFetch<{ data: { legal_name: string; trade_name: string | null; siren: string; naf_code: string | null; creation_date: string | null; enrichment_source: string | null } }>(`/companies/${deal.company_id}`, token),
-      apiFetch<Offer>(`/deals/${id}/offers/active`, token),
+      apiFetch<{ data: CompanyApiResponse }>(`/companies/${deal.company_id}`, token),
+      apiFetch<{ data: Offer }>(`/deals/${id}/offers/active`, token),
     ])
 
     if (companyResult.status === 'fulfilled') {
@@ -69,14 +76,15 @@ export default async function DealReviewPage({ params }: Props) {
       company = {
         name: c.trade_name ?? c.legal_name,
         siren: c.siren,
-        sector: c.naf_code ?? undefined,
+        sector: c.activity_code ?? undefined,
         creation_date: c.creation_date ?? undefined,
         enrichment_source: c.enrichment_source ?? undefined,
+        is_inactive: !c.is_active,
       }
     }
 
     if (offerResult.status === 'fulfilled') {
-      activeOffer = offerResult.value
+      activeOffer = offerResult.value.data
     }
   }
 

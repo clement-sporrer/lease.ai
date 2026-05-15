@@ -1,17 +1,19 @@
 import type { Deal } from '@/lib/types/admin'
 
 const BAND_COLOR: Record<string, string> = {
-  low: 'bg-green-100 text-green-800',
-  medium: 'bg-yellow-100 text-yellow-800',
-  high: 'bg-orange-100 text-orange-800',
-  very_high: 'bg-red-100 text-red-800',
+  A: 'bg-green-100 text-green-800',
+  B: 'bg-teal-100 text-teal-800',
+  C: 'bg-yellow-100 text-yellow-800',
+  D: 'bg-orange-100 text-orange-800',
+  E: 'bg-red-100 text-red-800',
 }
 
 const BAND_LABEL: Record<string, string> = {
-  low: 'Faible',
-  medium: 'Moyen',
-  high: 'Élevé',
-  very_high: 'Très élevé',
+  A: 'Très faible',
+  B: 'Faible',
+  C: 'Modéré',
+  D: 'Élevé',
+  E: 'Très élevé',
 }
 
 export function RiskSummary({ deal }: { deal: Deal }) {
