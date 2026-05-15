@@ -1,6 +1,6 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useTransition, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { generateOffer } from '@/lib/actions/offer-actions'
 import { MoneyAmount } from '@/components/shared/MoneyAmount'
@@ -17,15 +17,17 @@ interface Props {
 export function OfferPanel({ dealId, activeOffer, dealStatus }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
 
   const canGenerate = GENERATABLE_STATUSES.has(dealStatus)
   const nextVersion = (activeOffer?.version ?? 0) + 1
 
   function handleGenerate() {
+    setError(null)
     startTransition(async () => {
       const result = await generateOffer(dealId)
       if ('error' in result) {
-        alert(`Erreur : ${result.error}`)
+        setError(result.error)
       } else {
         router.refresh()
       }
@@ -46,6 +48,7 @@ export function OfferPanel({ dealId, activeOffer, dealStatus }: Props) {
           {isPending ? 'Génération…' : `Générer V${nextVersion}`}
         </button>
       </div>
+      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
 
       {activeOffer ? (
         <div className="space-y-2.5">
