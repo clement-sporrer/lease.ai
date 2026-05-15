@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, UploadFile
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,17 +12,6 @@ from app.schemas.quote import QuoteCreateRequest, QuotePatchRequest, QuoteRespon
 from app.services import deal_service
 
 router = APIRouter(tags=["quotes"])
-
-_MOCK_EXTRACTION = {
-    "supplier_name": "Lenovo France",
-    "quote_number": "DEV-2026-001",
-    "amount_excl_tax_cents": 9_900_000,
-    "amount_incl_tax_cents": 11_880_000,
-    "category": "hardware",
-    "items": [
-        {"label": "ThinkPad X1 Carbon", "quantity": 5, "unit_price_cents": 1_980_000},
-    ],
-}
 
 
 async def _get_quote(db: AsyncSession, deal_id: uuid.UUID, quote_id: uuid.UUID) -> Quote:
@@ -111,18 +100,57 @@ async def extract_quote(
 ) -> dict:
     del current_user
     quote = await _get_quote(db, deal_id, quote_id)
+
+    from app.services.mistral_service import extract_quote_pdf
+    result, source = await extract_quote_pdf(b"")  # no file — uses mock unless USE_REAL_MISTRAL
+
     quote.extraction_status = "done"
-    quote.extraction_payload = _MOCK_EXTRACTION
+    quote.extraction_payload = result
+    quote.extraction_source = source
     if not quote.supplier_name:
-        quote.supplier_name = _MOCK_EXTRACTION["supplier_name"]
+        quote.supplier_name = result.get("supplier_name")
     if not quote.quote_number:
-        quote.quote_number = _MOCK_EXTRACTION["quote_number"]
+        quote.quote_number = result.get("quote_number")
     if not quote.amount_excl_tax_cents:
-        quote.amount_excl_tax_cents = _MOCK_EXTRACTION["amount_excl_tax_cents"]
+        quote.amount_excl_tax_cents = result.get("amount_excl_tax_cents")
     if not quote.amount_incl_tax_cents:
-        quote.amount_incl_tax_cents = _MOCK_EXTRACTION["amount_incl_tax_cents"]
+        quote.amount_incl_tax_cents = result.get("amount_incl_tax_cents")
     if not quote.category:
-        quote.category = _MOCK_EXTRACTION["category"]
+        quote.category = result.get("category")
+    await db.commit()
+    await db.refresh(quote)
+    return {"data": QuoteResponse.model_validate(quote).model_dump(mode="json")}
+
+
+@router.post("/deals/{deal_id}/quotes/upload-and-extract", status_code=201)
+async def upload_and_extract_quote(
+    deal_id: uuid.UUID,
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Create a quote and immediately extract it from an uploaded PDF."""
+    del current_user
+    pdf_bytes = await file.read()
+    if len(pdf_bytes) > 20 * 1024 * 1024:
+        raise AppError(413, "DOCUMENT_TOO_LARGE", "PDF must be under 20 MB")
+
+    from app.services.mistral_service import extract_quote_pdf
+    result, source = await extract_quote_pdf(pdf_bytes)
+
+    quote = Quote(
+        deal_id=deal_id,
+        supplier_name=result.get("supplier_name"),
+        quote_number=result.get("quote_number"),
+        amount_excl_tax_cents=result.get("amount_excl_tax_cents"),
+        amount_incl_tax_cents=result.get("amount_incl_tax_cents"),
+        currency=result.get("currency", "EUR"),
+        category=result.get("category"),
+        extraction_status="done",
+        extraction_payload=result,
+        extraction_source=source,
+    )
+    db.add(quote)
     await db.commit()
     await db.refresh(quote)
     return {"data": QuoteResponse.model_validate(quote).model_dump(mode="json")}

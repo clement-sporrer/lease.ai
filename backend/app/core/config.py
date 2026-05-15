@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     cors_origins: list[str] = ["http://localhost:3000", "http://localhost:8081"]
     pappers_api_key: str = ""
     use_real_pappers: bool = False
+    mistral_api_key: str = ""
+    use_real_mistral: bool = False
 
 
 settings = Settings()
