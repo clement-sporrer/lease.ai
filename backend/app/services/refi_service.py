@@ -10,6 +10,8 @@ from app.core.errors import AppError
 from app.models.refi_package import FinancierDecision, RefiPackage
 from app.services import deal_service
 
+_DECISION_PKG_STATUS = {"approved": "financier_approved", "rejected": "financier_rejected"}
+
 
 async def create_refi_package(
     db: AsyncSession, deal_id: uuid.UUID, user_id: str
@@ -63,14 +65,12 @@ async def list_packages_for_deal(db: AsyncSession, deal_id: uuid.UUID) -> list[R
     return list(result.scalars().all())
 
 
-def _to_uuid(value: str | None) -> uuid.UUID | None:
-    """Convert a string to UUID, returning None if invalid or absent."""
-    if not value:
-        return None
+def _to_uuid(value: str) -> uuid.UUID:
+    """Convert a string to UUID, raising AppError(500) on invalid input."""
     try:
         return uuid.UUID(value)
     except (ValueError, AttributeError):
-        return None
+        raise AppError(500, "INVALID_USER_ID", f"Cannot parse user_id as UUID: {value!r}")
 
 
 async def record_decision(
@@ -92,7 +92,7 @@ async def record_decision(
         decided_by_user_id=_to_uuid(user_id),
     )
     db.add(dec)
-    pkg.status = decision
+    pkg.status = _DECISION_PKG_STATUS[decision]
     await deal_service.transition_deal(db, deal.id, target_status)
     await db.refresh(dec)
     return dec

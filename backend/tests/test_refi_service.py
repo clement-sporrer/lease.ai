@@ -52,7 +52,7 @@ async def test_record_decision_approved_transitions_deal():
         patch("app.services.refi_service.deal_service.transition_deal", new=AsyncMock(return_value=deal)),
     ):
         from app.services import refi_service
-        dec = await refi_service.record_decision(db, pkg, deal, "approved", reason=None, user_id="user_fin")
+        dec = await refi_service.record_decision(db, pkg, deal, "approved", reason=None, user_id=str(uuid.uuid4()))
     assert dec.decision == "approved"
 
 
