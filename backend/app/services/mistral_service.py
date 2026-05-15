@@ -58,7 +58,7 @@ async def extract_quote_pdf(pdf_bytes: bytes) -> tuple[dict, str]:
     Falls back to mock on any error.
     """
     if not settings.use_real_mistral or not settings.mistral_api_key:
-        return _MOCK_RESULT, "mock"
+        return dict(_MOCK_RESULT), "mock"
 
     headers = {
         "Authorization": f"Bearer {settings.mistral_api_key}",
@@ -86,7 +86,7 @@ async def extract_quote_pdf(pdf_bytes: bytes) -> tuple[dict, str]:
 
             if not ocr_text.strip():
                 logger.warning("Mistral OCR returned empty text — falling back to mock")
-                return _MOCK_RESULT, "mock"
+                return dict(_MOCK_RESULT), "mock"
 
             # Step 2: Structured extraction
             extract_resp = await client.post(
@@ -106,5 +106,5 @@ async def extract_quote_pdf(pdf_bytes: bytes) -> tuple[dict, str]:
             return json.loads(content), "mistral"
 
     except (httpx.RequestError, httpx.HTTPStatusError, json.JSONDecodeError, KeyError) as exc:
-        logger.warning("Mistral extraction failed: %s — falling back to mock", exc)
-        return _MOCK_RESULT, "mock"
+        logger.warning("Mistral extraction failed (%s): %s — falling back to mock", type(exc).__name__, exc)
+        return dict(_MOCK_RESULT), "mock"

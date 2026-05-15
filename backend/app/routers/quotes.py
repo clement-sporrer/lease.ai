@@ -10,6 +10,7 @@ from app.core.errors import AppError
 from app.models.quote import Quote
 from app.schemas.quote import QuoteCreateRequest, QuotePatchRequest, QuoteResponse
 from app.services import deal_service
+from app.services.mistral_service import extract_quote_pdf
 
 router = APIRouter(tags=["quotes"])
 
@@ -101,7 +102,6 @@ async def extract_quote(
     del current_user
     quote = await _get_quote(db, deal_id, quote_id)
 
-    from app.services.mistral_service import extract_quote_pdf
     result, source = await extract_quote_pdf(b"")  # no file — uses mock unless USE_REAL_MISTRAL
 
     quote.extraction_status = "done"
@@ -135,7 +135,9 @@ async def upload_and_extract_quote(
     if len(pdf_bytes) > 20 * 1024 * 1024:
         raise AppError(413, "DOCUMENT_TOO_LARGE", "PDF must be under 20 MB")
 
-    from app.services.mistral_service import extract_quote_pdf
+    if file.content_type not in ("application/pdf", "application/octet-stream"):
+        raise AppError(415, "UNSUPPORTED_MEDIA_TYPE", "Only PDF files are accepted")
+
     result, source = await extract_quote_pdf(pdf_bytes)
 
     quote = Quote(
