@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { Sidebar } from './Sidebar'
 
 type NavItem = { label: string; href: string }
-type Role = 'admin' | 'ops' | 'financier' | 'cfo'
+type Role = 'admin' | 'ops' | 'financier' | 'cfo' | 'risk' | 'commercial' | 'comptable'
 
 type Props = {
   role: Role
@@ -12,19 +12,13 @@ type Props = {
 }
 
 const NAV_ITEMS: Record<Role, NavItem[]> = {
-  admin: [
-    { label: 'Tableau de bord', href: '/admin' },
-    { label: "File d'attente", href: '/admin/queue' },
-  ],
-  ops: [
-    { label: 'Tableau de bord', href: '/ops' },
-  ],
-  financier: [
-    { label: 'Tableau de bord', href: '/financier' },
-  ],
-  cfo: [
-    { label: 'Tableau de bord', href: '/cfo' },
-  ],
+  admin:      [{ label: 'Tableau de bord', href: '/admin' }, { label: "File d'attente", href: '/admin/queue' }],
+  ops:        [{ label: 'Tableau de bord', href: '/ops' }],
+  financier:  [{ label: 'Tableau de bord', href: '/financier' }],
+  cfo:        [{ label: 'Tableau de bord', href: '/cfo' }],
+  risk:       [{ label: 'Tableau de bord', href: '/risk' }],
+  commercial: [{ label: 'Tableau de bord', href: '/commercial' }],
+  comptable:  [{ label: 'Tableau de bord', href: '/comptable' }],
 }
 
 export function DashboardShell({ role, title, subtitle, children }: Props) {
