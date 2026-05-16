@@ -1,9 +1,9 @@
-import Link from 'next/link'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { apiFetch } from '@/lib/api-client'
 import { DashboardShell } from '@/components/dashboard/DashboardShell'
 import { DecisionButtons } from '@/components/financier/DecisionButtons'
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 import type { RefiPackage, FinancierDecision } from '@/lib/types/refi'
 
 interface Props {
@@ -69,12 +69,10 @@ export default async function PackageDetailPage({ params }: Props) {
   return (
     <DashboardShell role="financier" title={title} subtitle={subtitle}>
       <div className="max-w-2xl space-y-6">
-        <Link
-          href="/financier"
-          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors"
-        >
-          ← Retour aux packages
-        </Link>
+        <Breadcrumb crumbs={[
+          { label: 'Tableau de bord', href: '/financier' },
+          { label: title },
+        ]} />
 
         {/* Package summary */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">

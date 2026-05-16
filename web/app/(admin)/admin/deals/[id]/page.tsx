@@ -11,6 +11,7 @@ import { ActionPanel } from '@/components/admin/ActionPanel'
 import { RefiPackagePanel } from '@/components/admin/RefiPackagePanel'
 import { OfferPanel } from '@/components/admin/OfferPanel'
 import { QuoteUploadZone } from '@/components/admin/QuoteUploadZone'
+import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { canWrite } from '@/lib/types/admin'
 import type { Deal, DealChecklist, TimelineResponse } from '@/lib/types/admin'
 import type { RefiPackage } from '@/lib/types/refi'
@@ -95,6 +96,11 @@ export default async function DealReviewPage({ params }: Props) {
   return (
     <DashboardShell role="admin" title={`Dossier ${deal.public_id}`}>
       <div className="max-w-4xl">
+        <Breadcrumb crumbs={[
+          { label: 'Tableau de bord', href: '/admin' },
+          { label: "File d'attente", href: '/admin/queue' },
+          { label: `Dossier ${deal.public_id}` },
+        ]} />
         <DealReviewHeader deal={deal} />
         <CompanySummary enrichment={company ?? undefined} />
         <QuoteSummary deal={deal} />
