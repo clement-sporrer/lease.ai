@@ -25,10 +25,14 @@ export function DashboardShell({ role, title, subtitle, children }: Props) {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar role={role} items={NAV_ITEMS[role]} />
-      <div className="flex-1 flex flex-col">
-        <header className="bg-white border-b border-gray-200 px-8 py-4">
-          <h1 className="text-xl font-bold text-navy-900">{title}</h1>
-          {subtitle && <p className="text-sm text-gray-500 mt-0.5">{subtitle}</p>}
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="bg-white border-b border-gray-100 px-8 py-5">
+          <h1 className="text-[22px] font-bold tracking-tight text-navy-900 leading-none">
+            {title}
+          </h1>
+          {subtitle && (
+            <p className="text-sm text-gray-400 mt-1.5 font-normal">{subtitle}</p>
+          )}
         </header>
         <main className="flex-1 p-8">{children}</main>
       </div>

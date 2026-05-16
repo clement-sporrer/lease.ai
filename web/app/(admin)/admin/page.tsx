@@ -65,41 +65,47 @@ export default async function AdminDashboard() {
         <StatCard label="Pré-approuvés" value={String(preApprovedCount)} color="teal" />
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h2 className="text-base font-semibold text-navy-900 mb-4">Dossiers en attente</h2>
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-50">
+          <h2 className="text-sm font-semibold text-navy-900">Dossiers en attente</h2>
+        </div>
         {apiError ? (
-          <p className="text-sm text-red-500">Impossible de charger la file d'attente.</p>
+          <p className="px-6 py-4 text-sm text-red-500">Impossible de charger la file d'attente.</p>
         ) : recent.length === 0 ? (
-          <p className="text-sm text-gray-400">Aucun dossier en attente.</p>
+          <p className="px-6 py-8 text-sm text-gray-400 text-center">Aucun dossier en attente.</p>
         ) : (
-          <table className="w-full text-sm border-collapse">
+          <table className="w-full text-sm">
             <thead>
-              <tr className="text-gray-500 font-medium text-left border-b border-gray-100">
-                <th className="pb-2 pr-4">Réf</th>
-                <th className="pb-2 pr-4">Statut</th>
-                <th className="pb-2 pr-4">Risque</th>
-                <th className="pb-2 pr-4">Date</th>
-                <th className="pb-2" />
+              <tr className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider text-left bg-gray-50/60">
+                <th className="px-6 py-3 pr-4">Réf</th>
+                <th className="py-3 pr-4">Statut</th>
+                <th className="py-3 pr-4">Risque</th>
+                <th className="py-3 pr-4">Date</th>
+                <th className="py-3 pr-6" />
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-50">
               {recent.map((deal) => (
                 <tr
                   key={deal.id}
-                  className="border-b border-gray-50 hover:bg-gray-50 transition-colors"
+                  className="hover:bg-gray-50/70 transition-colors group"
                 >
-                  <td className="py-2 pr-4 font-mono text-gray-700">{deal.public_id}</td>
-                  <td className="py-2 pr-4">
+                  <td className="px-6 py-3 pr-4 font-mono text-xs text-gray-700 tabular-nums">
+                    {deal.public_id}
+                  </td>
+                  <td className="py-3 pr-4">
                     <StatusBadge status={deal.status} />
                   </td>
-                  <td className="py-2 pr-4">
+                  <td className="py-3 pr-4">
                     <RiskBadge band={deal.risk_band} />
                   </td>
-                  <td className="py-2 pr-4 text-gray-500">{formatDate(deal.created_at)}</td>
-                  <td className="py-2 text-right">
+                  <td className="py-3 pr-4 text-gray-400 text-xs tabular-nums">
+                    {formatDate(deal.created_at)}
+                  </td>
+                  <td className="py-3 pr-6 text-right">
                     <Link
                       href={`/admin/deals/${deal.id}`}
-                      className="text-blue-600 hover:text-blue-800 font-medium text-xs"
+                      className="text-xs font-medium text-navy-900/40 group-hover:text-navy-900 transition-colors"
                     >
                       Voir →
                     </Link>
