@@ -8,6 +8,7 @@ interface PortfolioData {
   pipeline_deals: number
   total_commitment_eur: number
   cash_collected_month_eur: number
+  default_rate_pct: number | null
 }
 
 interface PortfolioResponse {
@@ -42,7 +43,9 @@ export default async function CfoDashboard() {
 
   const totalExposure = portfolio ? formatEuros(portfolio.total_commitment_eur) : '—'
   const monthlyRent = portfolio ? formatEuros(portfolio.cash_collected_month_eur) : '—'
-  const defaultRate = '—'
+  const defaultRate = portfolio?.default_rate_pct != null
+    ? `${portfolio.default_rate_pct.toFixed(1)} %`
+    : '—'
   const activeDeals = portfolio ? String(portfolio.active_leases) : '—'
 
   return (

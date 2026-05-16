@@ -7,6 +7,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import AppError
+from app.models.company import Company
+from app.models.deal import Deal
 from app.models.refi_package import FinancierDecision, RefiPackage
 from app.services import deal_service
 
@@ -58,6 +60,27 @@ async def get_package(db: AsyncSession, package_id: uuid.UUID) -> RefiPackage:
     return pkg
 
 
+async def get_package_with_company(db: AsyncSession, package_id: uuid.UUID) -> dict:
+    row = await db.execute(
+        select(
+            RefiPackage,
+            Company.legal_name.label("company_name"),
+            Deal.public_id.label("deal_public_id"),
+        )
+        .join(Deal, Deal.id == RefiPackage.deal_id)
+        .join(Company, Company.id == Deal.company_id)
+        .where(RefiPackage.id == package_id)
+    )
+    result = row.one_or_none()
+    if result is None:
+        raise AppError(404, "REFI_PACKAGE_NOT_FOUND", f"RefiPackage {package_id} not found")
+    pkg, company_name, deal_public_id = result
+    d = {c.key: getattr(pkg, c.key) for c in pkg.__table__.columns}
+    d["company_name"] = company_name
+    d["deal_public_id"] = deal_public_id
+    return d
+
+
 async def list_packages_for_deal(db: AsyncSession, deal_id: uuid.UUID) -> list[RefiPackage]:
     result = await db.execute(
         select(RefiPackage).where(RefiPackage.deal_id == deal_id).order_by(RefiPackage.created_at.desc())
@@ -65,11 +88,24 @@ async def list_packages_for_deal(db: AsyncSession, deal_id: uuid.UUID) -> list[R
     return list(result.scalars().all())
 
 
-async def list_all_packages(db: AsyncSession) -> list[RefiPackage]:
-    result = await db.execute(
-        select(RefiPackage).order_by(RefiPackage.created_at.desc())
+async def list_all_packages(db: AsyncSession) -> list[dict]:
+    rows = await db.execute(
+        select(
+            RefiPackage,
+            Company.legal_name.label("company_name"),
+            Deal.public_id.label("deal_public_id"),
+        )
+        .join(Deal, Deal.id == RefiPackage.deal_id)
+        .join(Company, Company.id == Deal.company_id)
+        .order_by(RefiPackage.created_at.desc())
     )
-    return list(result.scalars().all())
+    result = []
+    for pkg, company_name, deal_public_id in rows:
+        d = {c.key: getattr(pkg, c.key) for c in pkg.__table__.columns}
+        d["company_name"] = company_name
+        d["deal_public_id"] = deal_public_id
+        result.append(d)
+    return result
 
 
 def _to_uuid(value: str) -> uuid.UUID:

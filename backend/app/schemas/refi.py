@@ -19,6 +19,8 @@ class RefiPackageResponse(BaseModel):
     sent_at: datetime | None
     created_at: datetime
     updated_at: datetime
+    company_name: str | None = None
+    deal_public_id: str | None = None
 
 
 class FinancierDecisionRequest(BaseModel):

@@ -10,6 +10,8 @@ export interface RefiPackage {
   sent_at: string | null
   created_at: string
   updated_at: string
+  company_name: string | null
+  deal_public_id: string | null
 }
 
 export interface FinancierDecisionRequest {

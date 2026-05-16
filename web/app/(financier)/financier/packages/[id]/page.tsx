@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { apiFetch } from '@/lib/api-client'
 import { DashboardShell } from '@/components/dashboard/DashboardShell'
@@ -77,13 +78,19 @@ export default async function PackageDetailPage({ params }: Props) {
     )
   }
 
+  const title = pkg.company_name ?? `Package ${pkg.id.slice(0, 8)}…`
+  const subtitle = pkg.deal_public_id ? `Dossier ${pkg.deal_public_id}` : undefined
+
   return (
-    <DashboardShell
-      role="financier"
-      title={`Package ${pkg.id.slice(0, 8)}…`}
-      subtitle={`Dossier ${pkg.deal_id.slice(0, 8)}…`}
-    >
+    <DashboardShell role="financier" title={title} subtitle={subtitle}>
       <div className="max-w-2xl space-y-6">
+        <Link
+          href="/financier"
+          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors"
+        >
+          ← Retour aux packages
+        </Link>
+
         {/* Package summary */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
           <div className="flex items-center justify-between">
@@ -93,8 +100,8 @@ export default async function PackageDetailPage({ params }: Props) {
 
           <dl className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
             <div>
-              <dt className="text-gray-500">Deal ID</dt>
-              <dd className="font-mono text-gray-800 mt-0.5">{pkg.deal_id}</dd>
+              <dt className="text-gray-500">Référence dossier</dt>
+              <dd className="font-mono text-gray-800 mt-0.5">{pkg.deal_public_id ?? '—'}</dd>
             </div>
             <div>
               <dt className="text-gray-500">Créé le</dt>

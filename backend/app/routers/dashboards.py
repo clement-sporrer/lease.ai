@@ -38,6 +38,15 @@ async def cfo_portfolio(
     )
     pipeline_count = pipeline_count_result.scalar_one()
 
+    total_deals_result = await db.execute(select(func.count()).select_from(Deal))
+    total_deals = total_deals_result.scalar_one() or 1  # avoid division by zero
+
+    rejected_result = await db.execute(
+        select(func.count()).where(Deal.status == "financier_rejected")
+    )
+    rejected_count = rejected_result.scalar_one()
+    default_rate_pct = round(rejected_count / total_deals * 100, 1)
+
     risk_rows = await db.execute(
         select(Deal.risk_band, func.count(), func.sum(Deal.amount_cents))
         .where(Deal.risk_band.isnot(None))
@@ -57,6 +66,7 @@ async def cfo_portfolio(
             "cash_collected_month_eur": 0,
             "cash_collected_ytd_eur": 0,
             "late_payments": 0,
+            "default_rate_pct": default_rate_pct,
             "refi_approval_rate_pct": 0,
             "activation_rate_pct": 0,
             "exposure_by_partner": [],

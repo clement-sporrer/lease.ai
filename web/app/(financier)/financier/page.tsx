@@ -77,7 +77,8 @@ export default async function FinancierDashboard() {
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="text-gray-500 font-medium text-left border-b border-gray-100">
-                <th className="pb-2 pr-4">Réf.</th>
+                <th className="pb-2 pr-4">Dossier</th>
+                <th className="pb-2 pr-4">Société</th>
                 <th className="pb-2 pr-4">Statut</th>
                 <th className="pb-2 pr-4">Créé le</th>
                 <th className="pb-2" />
@@ -89,8 +90,11 @@ export default async function FinancierDashboard() {
                   key={pkg.id}
                   className="border-b border-gray-50 hover:bg-gray-50 transition-colors"
                 >
-                  <td className="py-2 pr-4 font-mono text-gray-700">
-                    {pkg.id.slice(0, 8)}…
+                  <td className="py-2 pr-4 font-mono text-xs text-gray-600">
+                    {pkg.deal_public_id ?? pkg.id.slice(0, 8) + '…'}
+                  </td>
+                  <td className="py-2 pr-4 font-medium text-gray-800">
+                    {pkg.company_name ?? '—'}
                   </td>
                   <td className="py-2 pr-4">
                     <StatusBadge status={pkg.status} />

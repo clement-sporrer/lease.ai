@@ -41,7 +41,7 @@ async def list_all_refi_packages(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     packages = await refi_service.list_all_packages(db)
-    return {"data": [RefiPackageResponse.model_validate(p).model_dump(mode="json") for p in packages]}
+    return {"data": [RefiPackageResponse.model_validate(p, from_attributes=False).model_dump(mode="json") for p in packages]}
 
 
 @router.get("/deals/{deal_id}/refi-packages")
@@ -60,8 +60,8 @@ async def get_refi_package(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    pkg = await refi_service.get_package(db, package_id)
-    return {"data": RefiPackageResponse.model_validate(pkg).model_dump(mode="json")}
+    pkg = await refi_service.get_package_with_company(db, package_id)
+    return {"data": RefiPackageResponse.model_validate(pkg, from_attributes=False).model_dump(mode="json")}
 
 
 @router.post("/refi-packages/{package_id}/decision")
