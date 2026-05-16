@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
 
@@ -21,6 +22,7 @@ export function ActionPanel({ dealId, token, canWrite }: Props) {
   const [docType, setDocType] = useState('')
   const [reason, setReason] = useState('')
   const [justification, setJustification] = useState('')
+
   async function post(path: string, body: object) {
     setLoading(true)
     try {
@@ -51,59 +53,47 @@ export function ActionPanel({ dealId, token, canWrite }: Props) {
 
   return (
     <div className="sticky bottom-0 flex items-center gap-3 border-t border-gray-200 bg-white px-8 py-4">
-      <button
-        onClick={() => setModal('request_doc')}
-        className="rounded-lg border border-yellow-400 px-4 py-2 text-sm font-medium text-yellow-700 hover:bg-yellow-50"
-      >
+      <Button variant="warning" onClick={() => setModal('request_doc')}>
         Demander une pièce
-      </button>
-      <button
-        onClick={() => setModal('pre_approve')}
-        className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
-      >
+      </Button>
+      <Button variant="success" onClick={() => setModal('pre_approve')}>
         Pré-accorder
-      </button>
-      <button
-        onClick={() => setModal('reject')}
-        className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-      >
+      </Button>
+      <Button variant="danger" onClick={() => setModal('reject')}>
         Refuser
-      </button>
+      </Button>
 
       {modal === 'request_doc' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-            <h4 className="mb-4 font-semibold">Demander une pièce</h4>
+            <h4 className="mb-4 font-semibold text-navy-900">Demander une pièce</h4>
             <label className="mb-1 block text-sm text-gray-600">Type de document</label>
             <input
-              className="mb-3 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              className="mb-3 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={docType}
               onChange={(e) => setDocType(e.target.value)}
               placeholder="rib, kbis, id_card..."
             />
             <label className="mb-1 block text-sm text-gray-600">Raison</label>
             <textarea
-              className="mb-4 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              className="mb-4 w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows={3}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
             />
             <div className="flex justify-end gap-2">
-              <button onClick={() => setModal(null)} className="text-sm text-gray-500">
+              <Button variant="ghost" size="sm" onClick={() => setModal(null)}>
                 Annuler
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="warning"
                 disabled={loading || !docType || !reason}
                 onClick={() =>
-                  post(`/admin/deals/${dealId}/request-document`, {
-                    document_type: docType,
-                    reason,
-                  })
+                  post(`/admin/deals/${dealId}/request-document`, { document_type: docType, reason })
                 }
-                className="rounded bg-yellow-500 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
               >
                 Envoyer
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -112,32 +102,30 @@ export function ActionPanel({ dealId, token, canWrite }: Props) {
       {modal === 'pre_approve' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-            <h4 className="mb-4 font-semibold">Pré-accorder le dossier</h4>
+            <h4 className="mb-4 font-semibold text-navy-900">Pré-accorder le dossier</h4>
             <label className="mb-1 block text-sm text-gray-600">
               Justification{' '}
               <span className="font-normal text-gray-400">(requise si checklist incomplète)</span>
             </label>
             <textarea
-              className="mb-4 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              className="mb-4 w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows={3}
               value={justification}
               onChange={(e) => setJustification(e.target.value)}
             />
             <div className="flex justify-end gap-2">
-              <button onClick={() => setModal(null)} className="text-sm text-gray-500">
+              <Button variant="ghost" size="sm" onClick={() => setModal(null)}>
                 Annuler
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="success"
                 disabled={loading}
                 onClick={() =>
-                  post(`/admin/deals/${dealId}/pre-approve`, {
-                    justification: justification || null,
-                  })
+                  post(`/admin/deals/${dealId}/pre-approve`, { justification: justification || null })
                 }
-                className="rounded bg-green-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
               >
                 Confirmer
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -146,27 +134,27 @@ export function ActionPanel({ dealId, token, canWrite }: Props) {
       {modal === 'reject' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-            <h4 className="mb-4 font-semibold">Refuser le dossier</h4>
+            <h4 className="mb-4 font-semibold text-navy-900">Refuser le dossier</h4>
             <label className="mb-1 block text-sm text-gray-600">
               Raison <span className="text-red-500">*</span>
             </label>
             <textarea
-              className="mb-4 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              className="mb-4 w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows={3}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
             />
             <div className="flex justify-end gap-2">
-              <button onClick={() => setModal(null)} className="text-sm text-gray-500">
+              <Button variant="ghost" size="sm" onClick={() => setModal(null)}>
                 Annuler
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="danger"
                 disabled={loading || !reason}
                 onClick={() => post(`/admin/deals/${dealId}/reject`, { reason })}
-                className="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
               >
                 Confirmer le refus
-              </button>
+              </Button>
             </div>
           </div>
         </div>

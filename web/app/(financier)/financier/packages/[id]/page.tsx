@@ -3,26 +3,11 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { apiFetch } from '@/lib/api-client'
 import { DashboardShell } from '@/components/dashboard/DashboardShell'
 import { DecisionButtons } from '@/components/financier/DecisionButtons'
+import { StatusBadge } from '@/components/shared/StatusBadge'
 import type { RefiPackage, FinancierDecision } from '@/lib/types/refi'
 
 interface Props {
   params: Promise<{ id: string }>
-}
-
-type PackageStatus = RefiPackage['status']
-
-const STATUS_BADGE: Record<PackageStatus, { label: string; className: string }> = {
-  sent: { label: 'En attente', className: 'bg-blue-100 text-blue-700' },
-  financier_approved: { label: 'Approuvé', className: 'bg-green-100 text-green-700' },
-  financier_rejected: { label: 'Rejeté', className: 'bg-red-100 text-red-700' },
-  draft: { label: 'Brouillon', className: 'bg-gray-100 text-gray-600' },
-}
-
-function StatusBadge({ status }: { status: PackageStatus }) {
-  const { label, className } = STATUS_BADGE[status] ?? STATUS_BADGE.draft
-  return (
-    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${className}`}>{label}</span>
-  )
 }
 
 function formatDate(iso: string): string {
@@ -146,15 +131,10 @@ export default async function PackageDetailPage({ params }: Props) {
             <div className="space-y-3">
               {decisions.map((d) => (
                 <div key={d.id} className="flex items-start gap-3 text-sm">
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium shrink-0 ${
-                      d.decision === 'approved'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-red-100 text-red-700'
-                    }`}
-                  >
-                    {d.decision === 'approved' ? 'Approuvé' : 'Rejeté'}
-                  </span>
+                  <StatusBadge
+                    status={d.decision === 'approved' ? 'financier_approved' : 'financier_rejected'}
+                    className="shrink-0"
+                  />
                   <div>
                     {d.reason && <p className="text-gray-700">{d.reason}</p>}
                     <p className="text-gray-400 text-xs mt-0.5">{formatDate(d.decided_at)}</p>

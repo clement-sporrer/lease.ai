@@ -3,23 +3,8 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { apiFetch } from '@/lib/api-client'
 import { DashboardShell } from '@/components/dashboard/DashboardShell'
 import { StatCard } from '@/components/dashboard/StatCard'
+import { StatusBadge } from '@/components/shared/StatusBadge'
 import type { RefiPackage } from '@/lib/types/refi'
-
-type PackageStatus = RefiPackage['status']
-
-const STATUS_BADGE: Record<PackageStatus, { label: string; className: string }> = {
-  sent: { label: 'En attente', className: 'bg-blue-100 text-blue-700' },
-  financier_approved: { label: 'Approuvé', className: 'bg-green-100 text-green-700' },
-  financier_rejected: { label: 'Rejeté', className: 'bg-red-100 text-red-700' },
-  draft: { label: 'Brouillon', className: 'bg-gray-100 text-gray-600' },
-}
-
-function StatusBadge({ status }: { status: PackageStatus }) {
-  const { label, className } = STATUS_BADGE[status] ?? STATUS_BADGE.draft
-  return (
-    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${className}`}>{label}</span>
-  )
-}
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('fr-FR', {

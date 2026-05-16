@@ -1,9 +1,10 @@
 'use client'
 
-import { useTransition, useState } from 'react'
+import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { generateOffer } from '@/lib/actions/offer-actions'
+import { Button } from '@/components/ui/button'
 import { MoneyAmount } from '@/components/shared/MoneyAmount'
 import type { Offer } from '@/lib/types/offer'
 
@@ -18,18 +19,15 @@ interface Props {
 export function OfferPanel({ dealId, activeOffer, dealStatus }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  const [error, setError] = useState<string | null>(null)
 
   const canGenerate = GENERATABLE_STATUSES.has(dealStatus)
   const nextVersion = (activeOffer?.version ?? 0) + 1
 
   function handleGenerate() {
-    setError(null)
     startTransition(async () => {
       const result = await generateOffer(dealId)
       if ('error' in result) {
         toast.error(result.error)
-        setError(result.error)
       } else {
         toast.success(`Offre V${nextVersion} générée`)
         router.refresh()
@@ -40,18 +38,16 @@ export function OfferPanel({ dealId, activeOffer, dealStatus }: Props) {
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-base font-semibold" style={{ color: '#0D183D' }}>
-          Offre ferme
-        </h2>
-        <button
+        <h2 className="text-base font-semibold text-navy-900">Offre ferme</h2>
+        <Button
+          variant="primary"
+          size="sm"
           onClick={handleGenerate}
           disabled={isPending || !canGenerate}
-          className="rounded-lg bg-blue-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-40"
         >
           {isPending ? 'Génération…' : `Générer V${nextVersion}`}
-        </button>
+        </Button>
       </div>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
 
       {activeOffer ? (
         <div className="space-y-2.5">
@@ -91,7 +87,7 @@ export function OfferPanel({ dealId, activeOffer, dealStatus }: Props) {
           )}
         </div>
       ) : (
-        <p className="italic text-gray-400">Aucune offre générée</p>
+        <p className="italic text-gray-400 text-sm">Aucune offre générée</p>
       )}
     </div>
   )

@@ -4,6 +4,7 @@ import { useTransition, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { recordFinancierDecision } from '@/lib/actions/refi-actions'
+import { Button } from '@/components/ui/button'
 
 interface Props {
   packageId: string
@@ -44,22 +45,22 @@ export function DecisionButtons({ packageId }: Props) {
       </div>
 
       <div className="flex gap-3">
-        <button
-          type="button"
+        <Button
+          variant="success"
+          className="flex-1"
           onClick={() => handleDecision('approved')}
           disabled={isPending}
-          className="flex-1 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isPending ? 'Enregistrement…' : 'Approuver'}
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="danger"
+          className="flex-1"
           onClick={() => handleDecision('rejected')}
           disabled={isPending}
-          className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isPending ? 'Enregistrement…' : 'Rejeter'}
-        </button>
+        </Button>
       </div>
     </div>
   )

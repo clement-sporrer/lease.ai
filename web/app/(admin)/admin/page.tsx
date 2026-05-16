@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { apiFetch } from '@/lib/api-client'
 import { DashboardShell } from '@/components/dashboard/DashboardShell'
 import { StatCard } from '@/components/dashboard/StatCard'
+import { StatusBadge, RiskBadge } from '@/components/shared/StatusBadge'
 
 interface QueueDeal {
   id: string
@@ -12,48 +13,6 @@ interface QueueDeal {
   risk_band: string | null
   created_at: string
   updated_at: string
-}
-
-type DealStatus = QueueDeal['status']
-
-const STATUS_BADGE: Record<string, { label: string; className: string }> = {
-  submitted: { label: 'Soumis', className: 'bg-blue-100 text-blue-700' },
-  internal_review: { label: 'En révision', className: 'bg-yellow-100 text-yellow-700' },
-  missing_documents: { label: 'Docs manquants', className: 'bg-orange-100 text-orange-700' },
-  pre_approved: { label: 'Pré-approuvé', className: 'bg-green-100 text-green-700' },
-  financier_rejected: { label: 'Refusé', className: 'bg-red-100 text-red-700' },
-}
-
-const RISK_BADGE: Record<string, { label: string; className: string }> = {
-  A: { label: 'A', className: 'bg-green-100 text-green-700' },
-  B: { label: 'B', className: 'bg-teal-100 text-teal-700' },
-  C: { label: 'C', className: 'bg-yellow-100 text-yellow-700' },
-  D: { label: 'D', className: 'bg-orange-100 text-orange-700' },
-}
-
-function StatusBadge({ status }: { status: DealStatus }) {
-  const badge = STATUS_BADGE[status] ?? { label: status, className: 'bg-gray-100 text-gray-600' }
-  return (
-    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${badge.className}`}>
-      {badge.label}
-    </span>
-  )
-}
-
-function RiskBadge({ band }: { band: string | null }) {
-  if (!band) {
-    return (
-      <span className="rounded-full px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-600">
-        —
-      </span>
-    )
-  }
-  const badge = RISK_BADGE[band] ?? { label: band, className: 'bg-gray-100 text-gray-600' }
-  return (
-    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${badge.className}`}>
-      {badge.label}
-    </span>
-  )
 }
 
 function formatDate(iso: string): string {
