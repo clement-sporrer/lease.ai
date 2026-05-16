@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
 
@@ -20,11 +21,8 @@ export function ActionPanel({ dealId, token, canWrite }: Props) {
   const [docType, setDocType] = useState('')
   const [reason, setReason] = useState('')
   const [justification, setJustification] = useState('')
-  const [error, setError] = useState<string | null>(null)
-
   async function post(path: string, body: object) {
     setLoading(true)
-    setError(null)
     try {
       const res = await fetch(`${API_BASE}${path}`, {
         method: 'POST',
@@ -33,16 +31,17 @@ export function ActionPanel({ dealId, token, canWrite }: Props) {
       })
       const data = await res.json() as { error?: { message?: string } }
       if (!res.ok) {
-        setError(data?.error?.message ?? `Erreur ${res.status}`)
+        toast.error(data?.error?.message ?? `Erreur ${res.status}`)
       } else {
         setModal(null)
         setDocType('')
         setReason('')
         setJustification('')
+        toast.success('Action effectuée avec succès')
         router.refresh()
       }
     } catch {
-      setError('Erreur réseau.')
+      toast.error('Erreur réseau — réessayez.')
     } finally {
       setLoading(false)
     }
@@ -75,7 +74,6 @@ export function ActionPanel({ dealId, token, canWrite }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
             <h4 className="mb-4 font-semibold">Demander une pièce</h4>
-            {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
             <label className="mb-1 block text-sm text-gray-600">Type de document</label>
             <input
               className="mb-3 w-full rounded border border-gray-300 px-3 py-2 text-sm"
@@ -115,7 +113,6 @@ export function ActionPanel({ dealId, token, canWrite }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
             <h4 className="mb-4 font-semibold">Pré-accorder le dossier</h4>
-            {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
             <label className="mb-1 block text-sm text-gray-600">
               Justification{' '}
               <span className="font-normal text-gray-400">(requise si checklist incomplète)</span>
@@ -150,7 +147,6 @@ export function ActionPanel({ dealId, token, canWrite }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
             <h4 className="mb-4 font-semibold">Refuser le dossier</h4>
-            {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
             <label className="mb-1 block text-sm text-gray-600">
               Raison <span className="text-red-500">*</span>
             </label>

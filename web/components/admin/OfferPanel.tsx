@@ -2,6 +2,7 @@
 
 import { useTransition, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { generateOffer } from '@/lib/actions/offer-actions'
 import { MoneyAmount } from '@/components/shared/MoneyAmount'
 import type { Offer } from '@/lib/types/offer'
@@ -27,8 +28,10 @@ export function OfferPanel({ dealId, activeOffer, dealStatus }: Props) {
     startTransition(async () => {
       const result = await generateOffer(dealId)
       if ('error' in result) {
+        toast.error(result.error)
         setError(result.error)
       } else {
+        toast.success(`Offre V${nextVersion} générée`)
         router.refresh()
       }
     })

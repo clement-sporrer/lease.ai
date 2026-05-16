@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { createRefiPackage, sendRefiPackage } from '@/lib/actions/refi-actions'
 import { MoneyAmount } from '@/components/shared/MoneyAmount'
 import type { Deal } from '@/lib/types/admin'
@@ -31,9 +32,11 @@ export function RefiPackagePanel({ deal, existingPackage }: Props) {
     startTransition(async () => {
       const result = await createRefiPackage(deal.id)
       if ('error' in result) {
+        toast.error(result.error)
         setError(result.error)
       } else {
         setPkg(result.data)
+        toast.success('Package de refinancement créé')
       }
     })
   }
@@ -44,9 +47,11 @@ export function RefiPackagePanel({ deal, existingPackage }: Props) {
     startTransition(async () => {
       const result = await sendRefiPackage(pkg.id, deal.id)
       if ('error' in result) {
+        toast.error(result.error)
         setError(result.error)
       } else {
         setPkg(result.data)
+        toast.success('Package envoyé au financier')
       }
     })
   }

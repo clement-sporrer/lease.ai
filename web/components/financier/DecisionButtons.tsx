@@ -2,6 +2,7 @@
 
 import { useTransition, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { recordFinancierDecision } from '@/lib/actions/refi-actions'
 
 interface Props {
@@ -12,16 +13,15 @@ export function DecisionButtons({ packageId }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [notes, setNotes] = useState('')
-  const [error, setError] = useState<string | null>(null)
 
   function handleDecision(decision: 'approved' | 'rejected') {
-    setError(null)
     startTransition(async () => {
       const result = await recordFinancierDecision(packageId, decision, notes.trim() || undefined)
       if ('error' in result) {
-        setError(result.error)
+        toast.error(result.error)
         return
       }
+      toast.success(decision === 'approved' ? 'Package approuvé' : 'Package rejeté')
       router.push('/financier')
     })
   }
@@ -61,10 +61,6 @@ export function DecisionButtons({ packageId }: Props) {
           {isPending ? 'Enregistrement…' : 'Rejeter'}
         </button>
       </div>
-
-      {error && (
-        <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
-      )}
     </div>
   )
 }
