@@ -21,6 +21,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className={`${ibmPlexMono.variable} h-full antialiased`}>
+      <head>
+        <link
+          rel="preconnect"
+          href="https://api.fontshare.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="stylesheet"
+          href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,800,900&display=swap"
+        />
+      </head>
       <body className="min-h-full flex flex-col">
         {children}
         <Toaster position="top-right" richColors closeButton />
