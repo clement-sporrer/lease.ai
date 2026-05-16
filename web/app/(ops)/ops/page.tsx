@@ -20,9 +20,13 @@ export default async function OpsDashboard() {
         <StatCard label="Dossiers actifs" value="0" color="teal" />
         <StatCard label="Activations en cours" value="0" />
       </div>
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h2 className="text-base font-semibold text-navy-900 mb-4">Tâches prioritaires</h2>
-        <p className="text-sm text-gray-400">Les tâches apparaîtront ici lorsque les workflows seront actifs.</p>
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-50">
+          <h2 className="text-sm font-semibold text-navy-900">Tâches prioritaires</h2>
+        </div>
+        <p className="px-6 py-8 text-center text-sm text-gray-400">
+          Les tâches apparaîtront ici lorsque les workflows seront actifs.
+        </p>
       </div>
     </DashboardShell>
   )

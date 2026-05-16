@@ -24,10 +24,10 @@ export default async function AdminQueuePage() {
 
   return (
     <DashboardShell role="admin" title="File d'attente" subtitle={`${queueData.meta.total} dossier(s) à traiter`}>
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        {apiError && (
-          <p className="text-sm text-red-500 mb-4">Impossible de charger la file d'attente.</p>
-        )}
+      {apiError && (
+        <p className="mb-4 text-sm text-red-500">Impossible de charger la file d'attente.</p>
+      )}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <DealQueue deals={queueData.data} />
       </div>
     </DashboardShell>
