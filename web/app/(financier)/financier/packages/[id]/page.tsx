@@ -75,48 +75,47 @@ export default async function PackageDetailPage({ params }: Props) {
         ]} />
 
         {/* Package summary */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-navy-900">Détails du package</h2>
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
+            <h2 className="text-sm font-semibold text-navy-900">Détails du package</h2>
             <StatusBadge status={pkg.status} />
           </div>
-
-          <dl className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
+          <dl className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm px-6 py-5">
             <div>
-              <dt className="text-gray-500">Référence dossier</dt>
-              <dd className="font-mono text-gray-800 mt-0.5">{pkg.deal_public_id ?? '—'}</dd>
+              <dt className="text-xs text-gray-400 mb-0.5">Référence dossier</dt>
+              <dd className="font-mono text-gray-800">{pkg.deal_public_id ?? '—'}</dd>
             </div>
             <div>
-              <dt className="text-gray-500">Créé le</dt>
-              <dd className="text-gray-800 mt-0.5">{formatDate(pkg.created_at)}</dd>
+              <dt className="text-xs text-gray-400 mb-0.5">Créé le</dt>
+              <dd className="text-gray-800 tabular-nums">{formatDate(pkg.created_at)}</dd>
             </div>
             <div>
-              <dt className="text-gray-500">Montant</dt>
-              <dd className="font-mono text-gray-800 mt-0.5">{formatAmount(pkg.amount_cents)}</dd>
+              <dt className="text-xs text-gray-400 mb-0.5">Montant</dt>
+              <dd className="font-mono text-gray-800 tabular-nums">{formatAmount(pkg.amount_cents)}</dd>
             </div>
             <div>
-              <dt className="text-gray-500">Durée</dt>
-              <dd className="font-mono text-gray-800 mt-0.5">
+              <dt className="text-xs text-gray-400 mb-0.5">Durée</dt>
+              <dd className="font-mono text-gray-800">
                 {pkg.duration_months !== null ? `${pkg.duration_months} mois` : '—'}
               </dd>
             </div>
             <div>
-              <dt className="text-gray-500">Mensualité</dt>
-              <dd className="font-mono text-gray-800 mt-0.5">
+              <dt className="text-xs text-gray-400 mb-0.5">Mensualité</dt>
+              <dd className="font-mono text-gray-800 tabular-nums">
                 {formatAmount(pkg.monthly_payment_cents)}
               </dd>
             </div>
             <div>
-              <dt className="text-gray-500">Score de risque</dt>
-              <dd className="font-mono text-gray-800 mt-0.5">
+              <dt className="text-xs text-gray-400 mb-0.5">Score de risque</dt>
+              <dd className="font-mono text-gray-800">
                 {pkg.risk_score !== null ? pkg.risk_score : '—'}
                 {pkg.risk_band ? ` (${pkg.risk_band})` : ''}
               </dd>
             </div>
             {pkg.sent_at && (
               <div>
-                <dt className="text-gray-500">Envoyé le</dt>
-                <dd className="text-gray-800 mt-0.5">{formatDate(pkg.sent_at)}</dd>
+                <dt className="text-xs text-gray-400 mb-0.5">Envoyé le</dt>
+                <dd className="text-gray-800 tabular-nums">{formatDate(pkg.sent_at)}</dd>
               </div>
             )}
           </dl>
@@ -124,9 +123,11 @@ export default async function PackageDetailPage({ params }: Props) {
 
         {/* Existing decisions */}
         {decisions.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-base font-semibold text-navy-900 mb-4">Décisions enregistrées</h2>
-            <div className="space-y-3">
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-50">
+              <h2 className="text-sm font-semibold text-navy-900">Décisions enregistrées</h2>
+            </div>
+            <div className="px-6 py-5 space-y-3">
               {decisions.map((d) => (
                 <div key={d.id} className="flex items-start gap-3 text-sm">
                   <StatusBadge
@@ -135,7 +136,7 @@ export default async function PackageDetailPage({ params }: Props) {
                   />
                   <div>
                     {d.reason && <p className="text-gray-700">{d.reason}</p>}
-                    <p className="text-gray-400 text-xs mt-0.5">{formatDate(d.decided_at)}</p>
+                    <p className="text-gray-400 text-xs mt-0.5 tabular-nums">{formatDate(d.decided_at)}</p>
                   </div>
                 </div>
               ))}
@@ -145,9 +146,13 @@ export default async function PackageDetailPage({ params }: Props) {
 
         {/* Decision buttons — only shown when package is pending */}
         {pkg.status === 'sent' && (
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-base font-semibold text-navy-900 mb-4">Votre décision</h2>
-            <DecisionButtons packageId={pkg.id} />
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-50">
+              <h2 className="text-sm font-semibold text-navy-900">Votre décision</h2>
+            </div>
+            <div className="px-6 py-5">
+              <DecisionButtons packageId={pkg.id} />
+            </div>
           </div>
         )}
       </div>

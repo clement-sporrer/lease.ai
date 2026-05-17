@@ -32,7 +32,7 @@ const TREND_CONFIG: Record<Trend, { icon: string; className: string }> = {
 
 export function StatCard({ label, value, sublabel, color = 'default', trend, trendLabel }: Props) {
   return (
-    <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+    <div className="relative overflow-hidden bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
       <div className={`absolute inset-x-0 bottom-0 h-0.5 ${ACCENT_BARS[color]}`} />
       <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-2">
         {label}

@@ -36,9 +36,9 @@ export function OfferPanel({ dealId, activeOffer, dealStatus }: Props) {
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-base font-semibold text-navy-900">Offre ferme</h2>
+    <div className="rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
+        <h2 className="text-sm font-semibold text-navy-900">Offre ferme</h2>
         <Button
           variant="primary"
           size="sm"
@@ -48,7 +48,7 @@ export function OfferPanel({ dealId, activeOffer, dealStatus }: Props) {
           {isPending ? 'Génération…' : `Générer V${nextVersion}`}
         </Button>
       </div>
-
+      <div className="px-6 py-5">
       {activeOffer ? (
         <div className="space-y-2.5">
           <Row label={`Version V${activeOffer.version}`}>
@@ -89,6 +89,7 @@ export function OfferPanel({ dealId, activeOffer, dealStatus }: Props) {
       ) : (
         <p className="italic text-gray-400 text-sm">Aucune offre générée</p>
       )}
+      </div>
     </div>
   )
 }
