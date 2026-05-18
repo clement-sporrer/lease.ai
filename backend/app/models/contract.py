@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import uuid
 from datetime import datetime
 
@@ -17,7 +15,7 @@ class Contract(Base):
     deal_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("deals.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    public_id: Mapped[str] = mapped_column(String(30), nullable=False, unique=True)
+    public_id: Mapped[str] = mapped_column(String(20), nullable=False, unique=True)
     status: Mapped[str] = mapped_column(String(50), nullable=False, server_default="draft")
     sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     signed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
