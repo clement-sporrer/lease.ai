@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 
 const STATUS_OPTIONS = [
   { value: '', label: 'Tous les statuts' },
@@ -14,6 +14,7 @@ export function QueueFilters() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const createQueryString = useCallback(
     (updates: Record<string, string>) => {
@@ -31,18 +32,23 @@ export function QueueFilters() {
     [searchParams]
   )
 
-  const currentSearch = searchParams.get('search') ?? ''
   const currentStatus = searchParams.get('status') ?? ''
+
+  function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      router.push(pathname + '?' + createQueryString({ search: value }))
+    }, 300)
+  }
 
   return (
     <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-50">
       <input
         type="search"
         placeholder="Rechercher (réf…)"
-        defaultValue={currentSearch}
-        onChange={(e) => {
-          router.push(pathname + '?' + createQueryString({ search: e.target.value }))
-        }}
+        defaultValue={searchParams.get('search') ?? ''}
+        onChange={handleSearchChange}
         className="h-8 w-48 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-700 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
       />
       <select

@@ -13,7 +13,7 @@ interface Props {
 
 export default async function AdminQueuePage({ searchParams }: Props) {
   const { status, search, page: pageStr } = await searchParams
-  const page = Math.max(1, parseInt(pageStr ?? '1', 10))
+  const page = Math.max(1, parseInt(pageStr ?? '1', 10) || 1)
   const pageSize = 20
 
   const supabase = await createSupabaseServerClient()
@@ -41,7 +41,8 @@ export default async function AdminQueuePage({ searchParams }: Props) {
       `/admin/queue?${params.toString()}`,
       session.access_token
     )
-  } catch {
+  } catch (err) {
+    console.error('[AdminQueuePage] queue fetch failed', err)
     apiError = true
   }
 
@@ -55,11 +56,11 @@ export default async function AdminQueuePage({ searchParams }: Props) {
         <p className="mb-4 text-sm text-red-500">Impossible de charger la file d'attente.</p>
       )}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <Suspense>
+        <Suspense fallback={<div className="h-14 border-b border-gray-50" />}>
           <QueueFilters />
         </Suspense>
         <DealQueue deals={queueData.data} />
-        <Suspense>
+        <Suspense fallback={null}>
           <QueuePagination
             total={queueData.meta.total}
             page={page}
