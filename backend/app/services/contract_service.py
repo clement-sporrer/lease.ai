@@ -44,8 +44,7 @@ async def generate_contract(db: AsyncSession, deal_id: uuid.UUID, user_id: str) 
     if existing is not None:
         return existing
 
-    short = str(deal_id)[:8].upper()
-    public_id = f"CTR-{short}"
+    public_id = f"CTR-{deal.public_id}"
     contract = Contract(
         id=uuid.uuid4(),
         deal_id=deal_id,

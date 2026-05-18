@@ -77,3 +77,71 @@ async def test_generate_contract_rejects_wrong_status():
 
     assert exc.value.status_code == 409
     assert exc.value.code == "INVALID_STATE"
+
+
+@pytest.mark.anyio
+async def test_send_signature_sets_sent_at_and_transitions():
+    contract = MagicMock()
+    contract.id = uuid.uuid4()
+    contract.deal_id = uuid.uuid4()
+    contract.status = "draft"
+    contract.sent_at = None
+    db = _make_db()
+
+    with (
+        patch("app.services.contract_service.get_contract", new=AsyncMock(return_value=contract)),
+        patch("app.services.contract_service.deal_service.transition_deal", new=AsyncMock()),
+    ):
+        result = await contract_service.send_signature(db, contract.id, str(uuid.uuid4()))
+
+    assert contract.status == "sent_for_signature"
+    assert contract.sent_at is not None
+    assert db.commit.called
+
+
+@pytest.mark.anyio
+async def test_send_signature_rejects_non_draft():
+    contract = MagicMock()
+    contract.id = uuid.uuid4()
+    contract.status = "sent_for_signature"
+    db = _make_db()
+
+    with patch("app.services.contract_service.get_contract", new=AsyncMock(return_value=contract)):
+        with pytest.raises(AppError) as exc:
+            await contract_service.send_signature(db, contract.id, str(uuid.uuid4()))
+
+    assert exc.value.status_code == 409
+
+
+@pytest.mark.anyio
+async def test_mock_sign_sets_signed_at_and_transitions():
+    contract = MagicMock()
+    contract.id = uuid.uuid4()
+    contract.deal_id = uuid.uuid4()
+    contract.status = "sent_for_signature"
+    contract.signed_at = None
+    db = _make_db()
+
+    with (
+        patch("app.services.contract_service.get_contract", new=AsyncMock(return_value=contract)),
+        patch("app.services.contract_service.deal_service.transition_deal", new=AsyncMock()),
+    ):
+        result = await contract_service.mock_sign(db, contract.id, str(uuid.uuid4()))
+
+    assert contract.status == "signed"
+    assert contract.signed_at is not None
+    assert db.commit.called
+
+
+@pytest.mark.anyio
+async def test_mock_sign_rejects_non_sent():
+    contract = MagicMock()
+    contract.id = uuid.uuid4()
+    contract.status = "draft"
+    db = _make_db()
+
+    with patch("app.services.contract_service.get_contract", new=AsyncMock(return_value=contract)):
+        with pytest.raises(AppError) as exc:
+            await contract_service.mock_sign(db, contract.id, str(uuid.uuid4()))
+
+    assert exc.value.status_code == 409
