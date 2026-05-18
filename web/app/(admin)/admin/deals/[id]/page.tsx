@@ -10,12 +10,15 @@ import { AuditTimeline } from '@/components/admin/AuditTimeline'
 import { ActionPanel } from '@/components/admin/ActionPanel'
 import { RefiPackagePanel } from '@/components/admin/RefiPackagePanel'
 import { OfferPanel } from '@/components/admin/OfferPanel'
+import { ContractPanel } from '@/components/admin/ContractPanel'
+import { ActivationChecklist } from '@/components/admin/ActivationChecklist'
 import { QuoteUploadZone } from '@/components/admin/QuoteUploadZone'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { canWrite } from '@/lib/types/admin'
 import type { Deal, DealChecklist, TimelineResponse } from '@/lib/types/admin'
 import type { RefiPackage } from '@/lib/types/refi'
 import type { Offer } from '@/lib/types/offer'
+import type { Contract, ActivationChecklist as ActivationChecklistType } from '@/lib/types/contract'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -41,19 +44,23 @@ export default async function DealReviewPage({ params }: Props) {
   let timeline: TimelineResponse = { data: [], meta: { total: 0 } }
   let refiPackage: RefiPackage | null = null
   let activeOffer: Offer | null = null
+  let contract: Contract | null = null
+  let activationChecklist: ActivationChecklistType | null = null
   let company: { name?: string; siren?: string; sector?: string; creation_date?: string; enrichment_source?: string; is_inactive?: boolean } | null = null
 
-  const [dealResult, checklistResult, timelineResult, refiResult] = await Promise.allSettled([
+  const [dealResult, checklistResult, timelineResult, refiResult, contractResult] = await Promise.allSettled([
     apiFetch<{ data: Deal }>(`/deals/${id}`, token),
     apiFetch<{ data: DealChecklist }>(`/admin/deals/${id}/checklist`, token),
     apiFetch<TimelineResponse>(`/deals/${id}/timeline`, token),
     apiFetch<{ data: RefiPackage[] }>(`/deals/${id}/refi-packages`, token),
+    apiFetch<{ data: Contract | null }>(`/deals/${id}/contracts/latest`, token),
   ])
 
   if (dealResult.status === 'fulfilled') deal = dealResult.value.data
   if (checklistResult.status === 'fulfilled') checklist = checklistResult.value.data
   if (timelineResult.status === 'fulfilled') timeline = timelineResult.value
   if (refiResult.status === 'fulfilled') refiPackage = refiResult.value.data[0] ?? null
+  if (contractResult.status === 'fulfilled') contract = contractResult.value.data
 
   // Fetch company and active offer separately — both depend on deal being loaded
   if (deal) {
@@ -87,6 +94,14 @@ export default async function DealReviewPage({ params }: Props) {
     if (offerResult.status === 'fulfilled') {
       activeOffer = offerResult.value.data
     }
+
+    if (contract && ['signed', 'activation_pending', 'active'].includes(deal.status ?? '')) {
+      const checklistFetchResult = await apiFetch<{ data: ActivationChecklistType }>(
+        `/contracts/${contract.id}/activation-checklist`,
+        token
+      ).catch(() => null)
+      if (checklistFetchResult) activationChecklist = checklistFetchResult.data
+    }
   }
 
   if (!deal) {
@@ -115,6 +130,17 @@ export default async function DealReviewPage({ params }: Props) {
             dealId={id}
             activeOffer={activeOffer}
             dealStatus={deal.status}
+          />
+          <ContractPanel
+            dealId={id}
+            dealStatus={deal.status}
+            contract={contract}
+          />
+          <ActivationChecklist
+            dealId={id}
+            dealStatus={deal.status}
+            contract={contract}
+            checklist={activationChecklist}
           />
         </section>
         <DocumentList
