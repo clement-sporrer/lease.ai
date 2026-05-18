@@ -243,3 +243,21 @@ async def activate(db: AsyncSession, contract_id: uuid.UUID, user_id: str) -> Co
     await db.commit()
     await db.refresh(contract)
     return contract
+
+
+async def get_assets(db: AsyncSession, contract_id: uuid.UUID) -> list[Asset]:
+    await get_contract(db, contract_id)
+    result = await db.execute(
+        select(Asset).where(Asset.contract_id == contract_id).order_by(Asset.created_at)
+    )
+    return list(result.scalars().all())
+
+
+async def get_payment_schedule(db: AsyncSession, contract_id: uuid.UUID) -> list[PaymentSchedule]:
+    await get_contract(db, contract_id)
+    result = await db.execute(
+        select(PaymentSchedule)
+        .where(PaymentSchedule.contract_id == contract_id)
+        .order_by(PaymentSchedule.due_date)
+    )
+    return list(result.scalars().all())

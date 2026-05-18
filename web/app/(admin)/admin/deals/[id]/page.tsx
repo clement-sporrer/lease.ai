@@ -12,13 +12,14 @@ import { RefiPackagePanel } from '@/components/admin/RefiPackagePanel'
 import { OfferPanel } from '@/components/admin/OfferPanel'
 import { ContractPanel } from '@/components/admin/ContractPanel'
 import { ActivationChecklist } from '@/components/admin/ActivationChecklist'
+import { AssetsPanel } from '@/components/admin/AssetsPanel'
 import { QuoteUploadZone } from '@/components/admin/QuoteUploadZone'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { canWrite } from '@/lib/types/admin'
 import type { Deal, DealChecklist, TimelineResponse } from '@/lib/types/admin'
 import type { RefiPackage } from '@/lib/types/refi'
 import type { Offer } from '@/lib/types/offer'
-import type { Contract, ActivationChecklist as ActivationChecklistType } from '@/lib/types/contract'
+import type { Contract, ActivationChecklist as ActivationChecklistType, Asset, PaymentScheduleEntry } from '@/lib/types/contract'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -46,6 +47,8 @@ export default async function DealReviewPage({ params }: Props) {
   let activeOffer: Offer | null = null
   let contract: Contract | null = null
   let activationChecklist: ActivationChecklistType | null = null
+  let assets: Asset[] = []
+  let paymentSchedule: PaymentScheduleEntry[] = []
   let company: { name?: string; siren?: string; sector?: string; creation_date?: string; enrichment_source?: string; is_inactive?: boolean } | null = null
 
   const [dealResult, checklistResult, timelineResult, refiResult, contractResult] = await Promise.allSettled([
@@ -102,6 +105,15 @@ export default async function DealReviewPage({ params }: Props) {
       ).catch(() => null)
       if (checklistFetchResult) activationChecklist = checklistFetchResult.data
     }
+
+    if (contract && deal.status === 'active') {
+      const [assetsResult, scheduleResult] = await Promise.allSettled([
+        apiFetch<{ data: Asset[] }>(`/contracts/${contract.id}/assets`, token),
+        apiFetch<{ data: PaymentScheduleEntry[] }>(`/contracts/${contract.id}/payment-schedule`, token),
+      ])
+      if (assetsResult.status === 'fulfilled') assets = assetsResult.value.data
+      if (scheduleResult.status === 'fulfilled') paymentSchedule = scheduleResult.value.data
+    }
   }
 
   if (!deal) {
@@ -143,6 +155,9 @@ export default async function DealReviewPage({ params }: Props) {
             checklist={activationChecklist}
           />
         </section>
+        {deal.status === 'active' && (
+          <AssetsPanel assets={assets} schedule={paymentSchedule} />
+        )}
         <DocumentList
           documents={checklist?.documents ?? []}
           canWrite={userCanWrite}

@@ -8,7 +8,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_user
 from app.core.db import get_db
-from app.schemas.contract import ActivationChecklistResponse, ContractResponse
+from app.schemas.contract import (
+    ActivationChecklistResponse,
+    AssetResponse,
+    ContractResponse,
+    PaymentScheduleEntryResponse,
+)
 from app.services import contract_service
 
 _READ_ROLES = {"admin", "ops", "risk"}
@@ -81,6 +86,34 @@ async def get_activation_checklist(
     _require_read(current_user)
     checklist = await contract_service.activation_checklist(db, contract_id)
     return {"data": ActivationChecklistResponse.model_validate(checklist).model_dump(mode="json")}
+
+
+@router.get("/contracts/{contract_id}/assets")
+async def list_assets(
+    contract_id: uuid.UUID,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    _require_read(current_user)
+    assets = await contract_service.get_assets(db, contract_id)
+    return {
+        "data": [AssetResponse.model_validate(a).model_dump(mode="json") for a in assets],
+        "meta": {"total": len(assets)},
+    }
+
+
+@router.get("/contracts/{contract_id}/payment-schedule")
+async def get_payment_schedule(
+    contract_id: uuid.UUID,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    _require_read(current_user)
+    entries = await contract_service.get_payment_schedule(db, contract_id)
+    return {
+        "data": [PaymentScheduleEntryResponse.model_validate(e).model_dump(mode="json") for e in entries],
+        "meta": {"total": len(entries)},
+    }
 
 
 @router.post("/contracts/{contract_id}/activate")

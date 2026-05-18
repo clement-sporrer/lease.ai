@@ -11,6 +11,25 @@ export interface Contract {
   created_at: string
 }
 
+export interface Asset {
+  id: string
+  contract_id: string
+  name: string
+  category: string | null
+  quantity: number
+  unit_value_cents: number | null
+  created_at: string
+}
+
+export interface PaymentScheduleEntry {
+  id: string
+  contract_id: string
+  due_date: string
+  amount_cents: number
+  status: string
+  created_at: string
+}
+
 export interface ActivationChecklistItem {
   key: string
   label: string

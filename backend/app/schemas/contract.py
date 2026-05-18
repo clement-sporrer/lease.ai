@@ -21,6 +21,29 @@ class ContractResponse(BaseModel):
     created_at: datetime
 
 
+class AssetResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    contract_id: uuid.UUID
+    name: str
+    category: str | None
+    quantity: int
+    unit_value_cents: int | None
+    created_at: datetime
+
+
+class PaymentScheduleEntryResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    contract_id: uuid.UUID
+    due_date: datetime
+    amount_cents: int
+    status: str
+    created_at: datetime
+
+
 class ActivationChecklistItem(BaseModel):
     key: str
     label: str
