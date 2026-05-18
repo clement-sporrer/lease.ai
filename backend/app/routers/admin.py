@@ -1,4 +1,5 @@
 import uuid
+from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -28,7 +29,7 @@ def _require_write(current_user: dict) -> None:
 
 @router.get("/queue")
 async def get_queue(
-    status: str | None = Query(default=None),
+    status: Literal["submitted", "internal_review", "missing_documents"] | None = Query(default=None),
     search: str | None = Query(default=None),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),

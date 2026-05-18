@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 const STATUS_OPTIONS = [
   { value: '', label: 'Tous les statuts' },
@@ -15,6 +15,8 @@ export function QueueFilters() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current) }, [])
 
   const createQueryString = useCallback(
     (updates: Record<string, string>) => {

@@ -54,9 +54,10 @@ async def get_queue(
     count_query = select(func.count()).select_from(Deal).where(base_filter)
 
     if search:
-        pattern = f"%{search}%"
-        data_query = data_query.where(Deal.public_id.ilike(pattern))
-        count_query = count_query.where(Deal.public_id.ilike(pattern))
+        escaped = search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        pattern = f"%{escaped}%"
+        data_query = data_query.where(Deal.public_id.ilike(pattern, escape="\\"))
+        count_query = count_query.where(Deal.public_id.ilike(pattern, escape="\\"))
 
     data_result = await db.execute(data_query)
     count_result = await db.execute(count_query)

@@ -53,7 +53,7 @@ export function Sidebar({ role, items }: SidebarProps) {
     <aside className="w-60 bg-navy-900 min-h-screen flex flex-col">
       <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <img src="/leaseai-icon.png" alt="" className="h-7 w-7 object-contain" />
+          <img src="/leaseai-icon.png" alt="" className="h-7 w-auto" />
           <span className="text-white font-bold text-base tracking-wide" style={{ fontFamily: 'var(--font-michroma)' }}>LeaseAI</span>
         </div>
         <span className="text-white/40 text-xs">{ROLE_LABELS[role]}</span>

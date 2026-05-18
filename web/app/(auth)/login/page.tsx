@@ -38,7 +38,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <div className="mb-3 flex items-center justify-center gap-3">
-            <img src="/leaseai-icon.png" alt="" className="h-10 w-10 object-contain" />
+            <img src="/leaseai-icon.png" alt="" className="h-10 w-auto" />
             <span className="text-2xl font-bold text-navy-900" style={{ fontFamily: 'var(--font-michroma)' }}>LeaseAI</span>
           </div>
           <p className="text-sm text-gray-500">Plateforme de gestion de leasing IT</p>
