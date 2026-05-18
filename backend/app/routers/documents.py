@@ -95,6 +95,24 @@ async def reject_document(
     return {"data": DocumentResponse.model_validate(document).model_dump(mode="json")}
 
 
+_DOC_READ_ROLES = {UserRole.admin, UserRole.ops, UserRole.risk}
+
+
+@router.get("/documents/{document_id}/view-url")
+async def get_document_view_url(
+    document_id: uuid.UUID,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    actor_role = current_user.get("active_role", "")
+    if isinstance(actor_role, UserRole):
+        actor_role = actor_role.value
+    if actor_role not in {r.value for r in _DOC_READ_ROLES}:
+        raise HTTPException(status_code=403, detail="Forbidden: admin, ops or risk required")
+    result = await document_service.get_view_url(db, document_id, actor_role)
+    return {"data": result}
+
+
 @router.get("/deals/{deal_id}/documents")
 async def list_documents(
     deal_id: uuid.UUID,

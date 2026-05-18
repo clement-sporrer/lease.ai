@@ -154,6 +154,38 @@ async def reject_document(
     return document
 
 
+async def get_view_url(db: AsyncSession, document_id: uuid.UUID, actor_role: str) -> dict:
+    result = await db.execute(select(Document).where(Document.id == document_id))
+    document = result.scalar_one_or_none()
+    if document is None:
+        raise AppError(404, "DOCUMENT_NOT_FOUND", f"Document {document_id} not found")
+    if document.storage_key is None:
+        raise AppError(409, "DOCUMENT_NOT_UPLOADED", "Document has no file uploaded yet")
+
+    sign_url = (
+        f"{settings.supabase_url}/storage/v1/object/sign"
+        f"/{settings.object_storage_bucket}/{document.storage_key}"
+    )
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(
+            sign_url,
+            headers={
+                "Authorization": f"Bearer {settings.supabase_service_role_key}",
+                "apikey": settings.supabase_service_role_key,
+            },
+            json={"expiresIn": 3600},
+        )
+        payload = resp.json()
+
+    signed_path: str = payload.get("signedURL") or payload.get("signedUrl") or ""
+    if signed_path.startswith("/"):
+        view_url = f"{settings.supabase_url}/storage/v1{signed_path}"
+    else:
+        view_url = signed_path
+
+    return {"url": view_url, "expires_in": 3600}
+
+
 async def confirm_upload_and_maybe_resume_review(
     db: AsyncSession,
     deal_id: uuid.UUID,

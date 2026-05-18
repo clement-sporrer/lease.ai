@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/shared/EmptyState'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { Button } from '@/components/ui/button'
 import type { DocumentItem } from '@/lib/types/admin'
+import { DocumentViewerButton } from '@/components/admin/DocumentViewer'
 
 const DOC_STATUS_MAP: Record<string, string> = {
   validated: 'financier_approved',
@@ -70,26 +71,21 @@ export function DocumentList({ documents, canWrite, token }: Props) {
                 <StatusBadge status={DOC_STATUS_MAP[doc.status] ?? 'draft'} className="shrink-0" />
                 <span className="truncate text-sm text-gray-700">{doc.file_name || doc.type}</span>
               </div>
-              {canWrite && doc.status !== 'validated' && doc.status !== 'rejected' && (
-                <div className="flex shrink-0 gap-2">
-                  <Button
-                    variant="success"
-                    size="xs"
-                    onClick={() => postDoc(doc.id, 'validate')}
-                    disabled={loadingId === doc.id}
-                  >
-                    Valider
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="xs"
-                    onClick={() => handleReject(doc.id)}
-                    disabled={loadingId === doc.id}
-                  >
-                    Refuser
-                  </Button>
-                </div>
-              )}
+              <div className="flex shrink-0 items-center gap-2">
+                {doc.status !== 'pending_upload' && (
+                  <DocumentViewerButton documentId={doc.id} fileName={doc.file_name || doc.type} />
+                )}
+                {canWrite && doc.status !== 'validated' && doc.status !== 'rejected' && (
+                  <>
+                    <Button variant="success" size="xs" onClick={() => postDoc(doc.id, 'validate')} disabled={loadingId === doc.id}>
+                      Valider
+                    </Button>
+                    <Button variant="danger" size="xs" onClick={() => handleReject(doc.id)} disabled={loadingId === doc.id}>
+                      Refuser
+                    </Button>
+                  </>
+                )}
+              </div>
             </li>
           ))}
         </ul>
