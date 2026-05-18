@@ -1,0 +1,253 @@
+<h2>LeaseAI — Roadmap complète</h2>
+<p class="subtitle">Produit + Backend + Web + Intégrations + IA — Vision "AI-native operator"</p>
+
+<!-- INTEGRATION TIERS -->
+<div class="section">
+  <div class="label">🔌 Carte des intégrations — par priorité</div>
+  <div class="mockup">
+    <div class="mockup-body" style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;padding:0">
+      <div style="padding:14px;border-right:1px solid #e2e8f0">
+        <div style="font-size:11px;font-weight:700;color:#dc2626;margin-bottom:8px">🔴 CRITIQUE — Phase 1</div>
+        <div style="font-size:12px;line-height:2">
+          <div style="font-weight:600">Pappers API</div>
+          <div style="color:#64748b;font-size:11px;margin-bottom:6px">Enrichissement SIREN réel</div>
+          <div style="font-weight:600">Claude API</div>
+          <div style="color:#64748b;font-size:11px;margin-bottom:6px">Extraction docs + résumé risque</div>
+          <div style="font-weight:600">Supabase Storage</div>
+          <div style="color:#64748b;font-size:11px">Docs signés + accès contrôlé</div>
+        </div>
+      </div>
+      <div style="padding:14px;border-right:1px solid #e2e8f0">
+        <div style="font-size:11px;font-weight:700;color:#d97706;margin-bottom:8px">🟡 DÉMO-IMPACTANT — Phase 2</div>
+        <div style="font-size:12px;line-height:2">
+          <div style="font-weight:600">Yousign</div>
+          <div style="color:#64748b;font-size:11px;margin-bottom:6px">E-signature réelle (contrats)</div>
+          <div style="font-weight:600">Attio CRM</div>
+          <div style="color:#64748b;font-size:11px;margin-bottom:6px">Deals → CRM auto-sync</div>
+          <div style="font-weight:600">Resend</div>
+          <div style="color:#64748b;font-size:11px">Emails transactionnels</div>
+        </div>
+      </div>
+      <div style="padding:14px;border-right:1px solid #e2e8f0">
+        <div style="font-size:11px;font-weight:700;color:#0284c7;margin-bottom:8px">🔵 OPÉRATIONNEL — Phase 3</div>
+        <div style="font-size:12px;line-height:2">
+          <div style="font-weight:600">Qonto</div>
+          <div style="color:#64748b;font-size:11px;margin-bottom:6px">Paiements + réconciliation</div>
+          <div style="font-weight:600">Pennylane</div>
+          <div style="color:#64748b;font-size:11px;margin-bottom:6px">Comptabilité auto-sync</div>
+          <div style="font-weight:600">Google Workspace</div>
+          <div style="color:#64748b;font-size:11px">Drive, Docs, Gmail</div>
+        </div>
+      </div>
+      <div style="padding:14px">
+        <div style="font-size:11px;font-weight:700;color:#7c3aed;margin-bottom:8px">🟣 STRATÉGIQUE — Phase 4</div>
+        <div style="font-size:12px;line-height:2">
+          <div style="font-weight:600">Granola</div>
+          <div style="color:#64748b;font-size:11px;margin-bottom:6px">Meeting notes → deal draft</div>
+          <div style="font-weight:600">Cal.com</div>
+          <div style="color:#64748b;font-size:11px;margin-bottom:6px">Scheduling ops / client</div>
+          <div style="font-weight:600">OpenAI / Mistral</div>
+          <div style="color:#64748b;font-size:11px">Fallback LLM + fine-tuning</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PHASES -->
+<div class="section">
+  <div class="label">📅 Phases de développement</div>
+
+  <!-- Phase 1 -->
+  <div style="border:2px solid #dc2626;border-radius:12px;margin-bottom:16px;overflow:hidden">
+    <div style="background:#dc2626;color:white;padding:10px 16px;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-weight:700">Phase 1 — Premier étage + IA réelle</div>
+      <div style="font-size:12px;opacity:0.9">Semaines 1–4 · Objectif : Démo experts</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;background:white">
+      <div style="padding:14px;border-right:1px solid #fecaca">
+        <div class="label" style="color:#dc2626">Backend</div>
+        <ul style="font-size:12px;margin:6px 0;padding-left:16px;line-height:2">
+          <li>Modèles : RefiPackage, Offer, FinancierDecision</li>
+          <li>Migrations Alembic</li>
+          <li>POST /refi-packages + /send + /decision</li>
+          <li>POST /offers (offre ferme)</li>
+          <li>Tests unitaires sur chaque service</li>
+        </ul>
+      </div>
+      <div style="padding:14px;border-right:1px solid #fecaca">
+        <div class="label" style="color:#dc2626">Web</div>
+        <ul style="font-size:12px;margin:6px 0;padding-left:16px;line-height:2">
+          <li>Admin deal detail — polish complet</li>
+          <li>Action "Générer package refi" (réel)</li>
+          <li>Financier queue + deal view</li>
+          <li>Financier "Approuver / Refuser" (réel)</li>
+          <li>CFO dashboard (vraies données)</li>
+          <li>Seed data réaliste (3 dossiers)</li>
+        </ul>
+      </div>
+      <div style="padding:14px">
+        <div class="label" style="color:#dc2626">Intégrations 🔴</div>
+        <ul style="font-size:12px;margin:6px 0;padding-left:16px;line-height:2">
+          <li><strong>Pappers API</strong> — remplace le mock SIREN</li>
+          <li>Test : recherche SIREN live, fallback mock</li>
+          <li><strong>Claude API</strong> — extraction devis PDF</li>
+          <li>Test : upload PDF → JSON structuré</li>
+          <li>Claude — résumé risque (1 paragraph)</li>
+          <li>Checkpoint : tests d'intégration isolés</li>
+        </ul>
+      </div>
+    </div>
+    <div style="background:#fff5f5;padding:10px 16px;font-size:12px;border-top:1px solid #fecaca">
+      <strong>Checkpoint démo :</strong> Admin approve → statut change → Financier voit le package → décide → CFO dashboard se met à jour. Tout en base réelle.
+    </div>
+  </div>
+
+  <!-- Phase 2 -->
+  <div style="border:2px solid #d97706;border-radius:12px;margin-bottom:16px;overflow:hidden">
+    <div style="background:#d97706;color:white;padding:10px 16px;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-weight:700">Phase 2 — Contrats + Ops + CRM</div>
+      <div style="font-size:12px;opacity:0.9">Semaines 5–8 · Objectif : Cycle complet</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;background:white">
+      <div style="padding:14px;border-right:1px solid #fde68a">
+        <div class="label" style="color:#d97706">Backend</div>
+        <ul style="font-size:12px;margin:6px 0;padding-left:16px;line-height:2">
+          <li>Modèles : Contract, Asset, Signature</li>
+          <li>POST /contracts + /mock-sign</li>
+          <li>POST /assets + activation</li>
+          <li>Ops checklist endpoint</li>
+        </ul>
+      </div>
+      <div style="padding:14px;border-right:1px solid #fde68a">
+        <div class="label" style="color:#d97706">Web</div>
+        <ul style="font-size:12px;margin:6px 0;padding-left:16px;line-height:2">
+          <li>Vue contrat + signature</li>
+          <li>Ops activation checklist</li>
+          <li>Asset créé visible (locataire)</li>
+          <li>Notifications in-app</li>
+        </ul>
+      </div>
+      <div style="padding:14px">
+        <div class="label" style="color:#d97706">Intégrations 🟡</div>
+        <ul style="font-size:12px;margin:6px 0;padding-left:16px;line-height:2">
+          <li><strong>Yousign</strong> — signature électronique réelle</li>
+          <li>Test : webhook confirmation</li>
+          <li><strong>Attio CRM</strong> — deal créé → contact Attio</li>
+          <li>Test : sync bidirectionnelle</li>
+          <li><strong>Resend</strong> — emails offre ferme, contrat</li>
+          <li>Test : templates + deliverability</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 3 -->
+  <div style="border:2px solid #0284c7;border-radius:12px;margin-bottom:16px;overflow:hidden">
+    <div style="background:#0284c7;color:white;padding:10px 16px;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-weight:700">Phase 3 — Billing + Finance + Workspace</div>
+      <div style="font-size:12px;opacity:0.9">Semaines 9–12 · Objectif : Opérationnel réel</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;background:white">
+      <div style="padding:14px;border-right:1px solid #bae6fd">
+        <div class="label" style="color:#0284c7">Backend</div>
+        <ul style="font-size:12px;margin:6px 0;padding-left:16px;line-height:2">
+          <li>Modèles : PaymentSchedule, Invoice, Payment</li>
+          <li>Génération échéancier</li>
+          <li>Webhook Qonto (paiement reçu)</li>
+          <li>Sync Pennylane (écriture comptable)</li>
+        </ul>
+      </div>
+      <div style="padding:14px;border-right:1px solid #bae6fd">
+        <div class="label" style="color:#0284c7">Web</div>
+        <ul style="font-size:12px;margin:6px 0;padding-left:16px;line-height:2">
+          <li>Vue échéancier + factures</li>
+          <li>Retards + alertes</li>
+          <li>CFO cash dashboard (réel)</li>
+          <li>Google Workspace — drive documents</li>
+        </ul>
+      </div>
+      <div style="padding:14px">
+        <div class="label" style="color:#0284c7">Intégrations 🔵</div>
+        <ul style="font-size:12px;margin:6px 0;padding-left:16px;line-height:2">
+          <li><strong>Qonto</strong> — relevés + paiements entrants</li>
+          <li>Test : réconciliation automatique</li>
+          <li><strong>Pennylane</strong> — écritures comptables</li>
+          <li>Test : plan comptable + exports</li>
+          <li><strong>Google Workspace</strong> — Drive / Gmail</li>
+          <li>Test : partage documents clients</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase 4 -->
+  <div style="border:2px solid #7c3aed;border-radius:12px;margin-bottom:16px;overflow:hidden">
+    <div style="background:#7c3aed;color:white;padding:10px 16px;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-weight:700">Phase 4 — AI Assistant + Intelligence ambiante</div>
+      <div style="font-size:12px;opacity:0.9">Mois 3–4 · Objectif : Le produit pense avec vous</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;background:white">
+      <div style="padding:14px;border-right:1px solid #e9d5ff">
+        <div class="label" style="color:#7c3aed">Backend</div>
+        <ul style="font-size:12px;margin:6px 0;padding-left:16px;line-height:2">
+          <li>Agent AI contextuel (Claude)</li>
+          <li>RAG sur historique des dossiers</li>
+          <li>Suggestions de décision</li>
+          <li>Détection anomalies paiement</li>
+        </ul>
+      </div>
+      <div style="padding:14px;border-right:1px solid #e9d5ff">
+        <div class="label" style="color:#7c3aed">Web</div>
+        <ul style="font-size:12px;margin:6px 0;padding-left:16px;line-height:2">
+          <li>Sidebar AI (contexte deal)</li>
+          <li>Résumé auto chaque dossier</li>
+          <li>Alertes intelligentes</li>
+          <li>Dashboard prédictif CFO</li>
+        </ul>
+      </div>
+      <div style="padding:14px">
+        <div class="label" style="color:#7c3aed">Intégrations 🟣</div>
+        <ul style="font-size:12px;margin:6px 0;padding-left:16px;line-height:2">
+          <li><strong>Granola</strong> — réunion → brouillon dossier</li>
+          <li>Test : export notes → deal fields</li>
+          <li><strong>Cal.com</strong> — scheduling client / ops</li>
+          <li>Test : RDV lié à un deal</li>
+          <li><strong>OpenAI / Mistral</strong> — fallback LLM</li>
+          <li>Test : A/B sur extraction docs</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRINCIPE D'INTEGRATION -->
+<div class="section">
+  <div class="label">🧪 Principe d'intégration — Test-first à chaque étape</div>
+  <div class="mockup">
+    <div class="mockup-body" style="padding:16px">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+        <div style="text-align:center;padding:12px">
+          <div style="font-size:24px;margin-bottom:8px">1️⃣</div>
+          <div style="font-weight:600;font-size:13px">Mock stable</div>
+          <div style="font-size:11px;color:#64748b;margin-top:4px">L'intégration est simulée en local. Le contrat d'interface est défini.</div>
+        </div>
+        <div style="text-align:center;padding:12px">
+          <div style="font-size:24px;margin-bottom:8px">2️⃣</div>
+          <div style="font-weight:600;font-size:13px">Test d'intégration isolé</div>
+          <div style="font-size:11px;color:#64748b;margin-top:4px">Script de test qui appelle l'API réelle en sandbox. CI séparé, n'affecte pas les tests unitaires.</div>
+        </div>
+        <div style="text-align:center;padding:12px">
+          <div style="font-size:24px;margin-bottom:8px">3️⃣</div>
+          <div style="font-weight:600;font-size:13px">Feature flag</div>
+          <div style="font-size:11px;color:#64748b;margin-top:4px">L'intégration réelle s'active via env var. En prod, on peut basculer sur le mock en 30 secondes.</div>
+        </div>
+        <div style="text-align:center;padding:12px">
+          <div style="font-size:24px;margin-bottom:8px">4️⃣</div>
+          <div style="font-weight:600;font-size:13px">Monitoring actif</div>
+          <div style="font-size:11px;color:#64748b;margin-top:4px">Chaque appel externe est loggé, chronométré, et alerté si latence &gt; seuil ou erreur répétée.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

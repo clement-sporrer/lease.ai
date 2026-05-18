@@ -1,0 +1,148 @@
+<h2>LeaseAI — Roadmap "Immeuble"</h2>
+<p class="subtitle">Backend-first · Données réelles · Récit linéaire pour la démo · 2–4 semaines</p>
+
+<div class="section">
+  <div class="label">🏗️ Fondations — DÉJÀ AUX NORMES</div>
+  <div class="mockup">
+    <div class="mockup-header">Ce qui tourne déjà (backend DB-backed + web partiel)</div>
+    <div class="mockup-body" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px">
+      <div>
+        <div class="label">Backend ✅</div>
+        <ul style="margin:8px 0;padding-left:20px;font-size:13px;line-height:1.8">
+          <li>Auth + rôles (Supabase JWT ES256)</li>
+          <li>Création de dossier (deals)</li>
+          <li>Enrichissement SIREN</li>
+          <li>Devis + documents + validation</li>
+          <li>Pricing indicatif + risk score</li>
+          <li>Revue admin (approve / reject)</li>
+          <li>Audit log (audit_events)</li>
+        </ul>
+      </div>
+      <div>
+        <div class="label">Web ✅ (partiel)</div>
+        <ul style="margin:8px 0;padding-left:20px;font-size:13px;line-height:1.8">
+          <li>Login + routing par rôle</li>
+          <li>Admin queue (liste des dossiers)</li>
+          <li>Admin deal review (détail complet)</li>
+          <li>CFO / Financier / Ops — shells vides</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="label">🏠 Premier étage — À FINIR PARFAITEMENT (2–4 semaines)</div>
+  <div class="mockup">
+    <div class="mockup-header">Ce qu'on construit pour la démo — tout connecté à la vraie base</div>
+    <div class="mockup-body" style="padding:16px">
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+        <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:12px">
+          <div style="font-size:11px;font-weight:600;color:#0369a1;margin-bottom:6px">SEMAINE 1</div>
+          <div style="font-weight:600;margin-bottom:4px">Backend — Refi + Financier</div>
+          <ul style="font-size:12px;margin:0;padding-left:16px;line-height:1.9">
+            <li>POST /refi-packages</li>
+            <li>POST /refi-packages/{id}/send</li>
+            <li>POST /refi-packages/{id}/decision</li>
+            <li>POST /offers (offre ferme)</li>
+            <li>Modèles SQLAlchemy + migrations</li>
+          </ul>
+        </div>
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px">
+          <div style="font-size:11px;font-weight:600;color:#16a34a;margin-bottom:6px">SEMAINE 2</div>
+          <div style="font-weight:600;margin-bottom:4px">Web — Admin polish + Refi</div>
+          <ul style="font-size:12px;margin:0;padding-left:16px;line-height:1.9">
+            <li>Admin deal detail — polish</li>
+            <li>Bouton "Générer package refi"</li>
+            <li>Vue package refi (admin)</li>
+            <li>Transition statut visible</li>
+            <li>Timeline enrichie</li>
+          </ul>
+        </div>
+        <div style="background:#fefce8;border:1px solid #fde047;border-radius:8px;padding:12px">
+          <div style="font-size:11px;font-weight:600;color:#ca8a04;margin-bottom:6px">SEMAINE 3</div>
+          <div style="font-weight:600;margin-bottom:4px">Web — Financier + Offre</div>
+          <ul style="font-size:12px;margin:0;padding-left:16px;line-height:1.9">
+            <li>Financier queue (packages reçus)</li>
+            <li>Financier deal view</li>
+            <li>Bouton "Approuver / Refuser"</li>
+            <li>Vue offre ferme générée</li>
+            <li>Statut mis à jour en temps réel</li>
+          </ul>
+        </div>
+        <div style="background:#fdf4ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px">
+          <div style="font-size:11px;font-weight:600;color:#9333ea;margin-bottom:6px">SEMAINE 4</div>
+          <div style="font-weight:600;margin-bottom:4px">Web — CFO + polish global</div>
+          <ul style="font-size:12px;margin:0;padding-left:16px;line-height:1.9">
+            <li>CFO dashboard (vraies données)</li>
+            <li>Portefeuille, encours, taux</li>
+            <li>Design system cohérent</li>
+            <li>Seed data réaliste (3 dossiers)</li>
+            <li>Répétition du script démo</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="background:#0d183d;color:white;border-radius:8px;padding:14px">
+        <div style="font-size:12px;font-weight:600;color:#10b981;margin-bottom:8px">🎬 SCRIPT DÉMO — Le récit de 10 minutes</div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;font-size:11px">
+          <div style="text-align:center">
+            <div style="background:#1e3a5f;border-radius:6px;padding:8px;margin-bottom:4px">👤 Admin</div>
+            <div style="color:#94a3b8">Queue → Ouvre dossier Globex Inc.<br>Voit risk score A<br>Clique "Pré-approuver"<br>→ Génère package refi</div>
+          </div>
+          <div style="text-align:center">
+            <div style="background:#1e3a5f;border-radius:6px;padding:8px;margin-bottom:4px">🏦 Financier</div>
+            <div style="color:#94a3b8">Voit le package<br>dans sa queue<br>Ouvre le dossier<br>Clique "Approuver"</div>
+          </div>
+          <div style="text-align:center">
+            <div style="background:#1e3a5f;border-radius:6px;padding:8px;margin-bottom:4px">✅ Admin (retour)</div>
+            <div style="color:#94a3b8">Statut passé à<br>"Accord financier"<br>Génère offre ferme<br>en un clic</div>
+          </div>
+          <div style="text-align:center">
+            <div style="background:#1e3a5f;border-radius:6px;padding:8px;margin-bottom:4px">⚙️ Ops</div>
+            <div style="color:#94a3b8">Voit le dossier<br>en attente<br>d'activation<br>(vue future)</div>
+          </div>
+          <div style="text-align:center">
+            <div style="background:#1e3a5f;border-radius:6px;padding:8px;margin-bottom:4px">📊 CFO</div>
+            <div style="color:#94a3b8">Dashboard vivant<br>Encours, taux défaut<br>Distribution risque<br>Pipeline actif</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="label">🏢 Étages suivants — SUR LES PLANS (post-démo)</div>
+  <div class="mockup">
+    <div class="mockup-header">Ce qui est prévu mais pas construit — les fondations sont prêtes</div>
+    <div class="mockup-body" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px">
+      <div>
+        <div class="label">Étage 2</div>
+        <ul style="font-size:12px;margin:4px 0;padding-left:16px;line-height:1.8;color:#64748b">
+          <li>Contrat + signature simulée</li>
+          <li>Checklist activation (ops)</li>
+          <li>Actif créé en base</li>
+        </ul>
+      </div>
+      <div>
+        <div class="label">Étage 3</div>
+        <ul style="font-size:12px;margin:4px 0;padding-left:16px;line-height:1.8;color:#64748b">
+          <li>Échéancier + factures</li>
+          <li>Paiements + retards</li>
+          <li>Vue client (locataire)</li>
+        </ul>
+      </div>
+      <div>
+        <div class="label">Étage 4</div>
+        <ul style="font-size:12px;margin:4px 0;padding-left:16px;line-height:1.8;color:#64748b">
+          <li>AI assistant contextuel</li>
+          <li>Intégrations (Pappers, Yousign)</li>
+          <li>Revendeur (mobile ou web)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,6 @@
+{"type":"server-started","port":65132,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:65132","screen_dir":"/Users/clementsporrer/.superset/projects/lease.ai/.superpowers/brainstorm/67586-1778845021/content","state_dir":"/Users/clementsporrer/.superset/projects/lease.ai/.superpowers/brainstorm/67586-1778845021/state"}
+{"type":"screen-added","file":"/Users/clementsporrer/.superset/projects/lease.ai/.superpowers/brainstorm/67586-1778845021/content/approaches.html"}
+{"type":"screen-added","file":"/Users/clementsporrer/.superset/projects/lease.ai/.superpowers/brainstorm/67586-1778845021/content/roadmap-overview.html"}
+{"type":"screen-added","file":"/Users/clementsporrer/.superset/projects/lease.ai/.superpowers/brainstorm/67586-1778845021/content/roadmap-full.html"}
+{"type":"screen-added","file":"/Users/clementsporrer/.superset/projects/lease.ai/.superpowers/brainstorm/67586-1778845021/content/waiting.html"}
+{"type":"server-stopped","reason":"idle timeout"}

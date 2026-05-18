@@ -9,7 +9,16 @@ from app.core.db import Base
 import app.models  # noqa: F401 — registers all ORM models on Base.metadata
 
 config = context.config
-config.set_main_option("sqlalchemy.url", settings.database_url.replace("%", "%%"))
+def _make_async_url(url: str) -> str:
+    """Ensure the URL uses the asyncpg driver for async Alembic migrations."""
+    if url.startswith("postgresql://") or url.startswith("postgres://"):
+        url = url.replace("postgresql://", "postgresql+asyncpg://", 1).replace(
+            "postgres://", "postgresql+asyncpg://", 1
+        )
+    return url.replace("%", "%%")
+
+
+config.set_main_option("sqlalchemy.url", _make_async_url(settings.database_url))
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
@@ -19,7 +28,7 @@ target_metadata = Base.metadata
 
 def run_migrations_offline() -> None:
     context.configure(
-        url=settings.database_url,
+        url=_make_async_url(settings.database_url).replace("%%", "%"),
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},

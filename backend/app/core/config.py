@@ -19,8 +19,10 @@ class Settings(BaseSettings):
     object_storage_bucket: str = "lease-documents"
     jwks_url: str = "https://conxwmnjhntbzftwgxig.supabase.co/auth/v1/.well-known/jwks.json"
     cors_origins: list[str] = ["http://localhost:3000", "http://localhost:8081"]
-    demo_mode: bool = True
-    demo_latency_ms: int = 600
+    pappers_api_key: str = ""
+    use_real_pappers: bool = False
+    mistral_api_key: str = ""
+    use_real_mistral: bool = False
 
 
 settings = Settings()

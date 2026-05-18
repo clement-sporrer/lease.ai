@@ -1,6 +1,7 @@
 import uuid
+from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_user
@@ -28,14 +29,20 @@ def _require_write(current_user: dict) -> None:
 
 @router.get("/queue")
 async def get_queue(
+    status: Literal["submitted", "internal_review", "missing_documents"] | None = Query(default=None),
+    search: str | None = Query(default=None),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100),
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     _require_read(current_user)
-    deals = await admin_service.get_queue(db)
+    deals, total = await admin_service.get_queue(
+        db, status=status, search=search, page=page, page_size=page_size
+    )
     return {
         "data": [DealResponse.model_validate(d).model_dump(mode="json") for d in deals],
-        "meta": {"total": len(deals)},
+        "meta": {"total": total, "page": page, "page_size": page_size},
     }
 
 

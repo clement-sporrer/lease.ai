@@ -73,10 +73,35 @@ export interface AuditEvent {
 
 export interface QueueResponse {
   data: Deal[]
-  meta: { total: number }
+  meta: { total: number; page: number; page_size: number }
 }
 
 export interface TimelineResponse {
   data: AuditEvent[]
   meta: { total: number }
+}
+
+export interface QuoteItem {
+  label: string
+  category: string | null
+  quantity: number
+  unit_price_cents: number | null
+  total_price_cents: number | null
+}
+
+export interface Quote {
+  id: string
+  deal_id: string
+  supplier_name: string | null
+  quote_number: string | null
+  amount_excl_tax_cents: number | null
+  amount_incl_tax_cents: number | null
+  currency: string
+  category: string | null
+  extraction_status: 'pending' | 'done' | 'failed'
+  extraction_source: string | null
+  extraction_payload: {
+    items?: QuoteItem[]
+    [key: string]: unknown
+  } | null
 }

@@ -1,7 +1,7 @@
 import uuid
 from typing import Any
 
-from sqlalchemy import case, select
+from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import AppError
@@ -28,13 +28,43 @@ async def _get_deal(db: AsyncSession, deal_id: uuid.UUID) -> Deal:
     return deal
 
 
-async def get_queue(db: AsyncSession) -> list[Deal]:
-    result = await db.execute(
+PAGE_SIZE_MAX = 100
+
+
+async def get_queue(
+    db: AsyncSession,
+    status: str | None = None,
+    search: str | None = None,
+    page: int = 1,
+    page_size: int = 20,
+) -> tuple[list[Deal], int]:
+    page_size = min(page_size, PAGE_SIZE_MAX)
+    offset = (page - 1) * page_size
+
+    allowed_statuses = list(_QUEUE_STATUSES) if status is None else [status]
+    base_filter = Deal.status.in_(allowed_statuses)
+
+    data_query = (
         select(Deal)
-        .where(Deal.status.in_(_QUEUE_STATUSES))
+        .where(base_filter)
         .order_by(_STATUS_PRIORITY.asc(), Deal.updated_at.desc())
+        .limit(page_size)
+        .offset(offset)
     )
-    return list(result.scalars().all())
+    count_query = select(func.count()).select_from(Deal).where(base_filter)
+
+    if search:
+        escaped = search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        pattern = f"%{escaped}%"
+        data_query = data_query.where(Deal.public_id.ilike(pattern, escape="\\"))
+        count_query = count_query.where(Deal.public_id.ilike(pattern, escape="\\"))
+
+    data_result = await db.execute(data_query)
+    count_result = await db.execute(count_query)
+
+    deals = list(data_result.scalars().all())
+    total = count_result.scalars().one()
+    return deals, total
 
 
 async def get_checklist(db: AsyncSession, deal_id: uuid.UUID) -> dict[str, Any]:
@@ -157,6 +187,13 @@ async def reject(
     if not reason or not reason.strip():
         raise AppError(422, "REASON_REQUIRED", "A reason is required to reject a deal")
     deal = await _get_deal(db, deal_id)
+    _ADMIN_REJECTABLE_STATUSES = {"internal_review", "missing_documents"}
+    if deal.status not in _ADMIN_REJECTABLE_STATUSES:
+        raise AppError(
+            409,
+            "INVALID_TRANSITION",
+            f"Cannot reject deal in status '{deal.status}'",
+        )
     _assert_transition(deal.status, "financier_rejected")
     deal.status = "financier_rejected"
     await audit_service.log(
