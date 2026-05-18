@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { EmptyState } from '@/components/shared/EmptyState'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import type { Deal } from '@/lib/types/admin'
 
@@ -17,9 +18,7 @@ function formatDate(iso: string): string {
 
 export function DealQueue({ deals }: { deals: Deal[] }) {
   if (deals.length === 0) {
-    return (
-      <p className="py-10 text-center text-sm text-gray-400">Aucun dossier en attente.</p>
-    )
+    return <EmptyState title="Aucun dossier en attente" subtitle="Les nouveaux dossiers soumis apparaîtront ici." />
   }
 
   return (

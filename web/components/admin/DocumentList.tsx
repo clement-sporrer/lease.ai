@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { EmptyState } from '@/components/shared/EmptyState'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { Button } from '@/components/ui/button'
 import type { DocumentItem } from '@/lib/types/admin'
@@ -60,7 +61,7 @@ export function DocumentList({ documents, canWrite, token }: Props) {
         <h3 className="text-sm font-semibold text-navy-900">Documents</h3>
       </div>
       {documents.length === 0 ? (
-        <p className="px-6 py-8 text-center text-sm text-gray-400">Aucun document.</p>
+        <EmptyState title="Aucun document" subtitle="Les documents uploadés par le partenaire apparaîtront ici." />
       ) : (
         <ul className="divide-y divide-gray-50">
           {documents.map((doc) => (
