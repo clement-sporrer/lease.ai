@@ -45,7 +45,7 @@ async def get_latest_contract(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     _require_read(current_user)
-    contract = await contract_service._get_latest_contract(db, deal_id)
+    contract = await contract_service.get_latest_contract(db, deal_id)
     data = ContractResponse.model_validate(contract).model_dump(mode="json") if contract else None
     return {"data": data}
 
@@ -80,7 +80,7 @@ async def get_activation_checklist(
 ) -> dict:
     _require_read(current_user)
     checklist = await contract_service.activation_checklist(db, contract_id)
-    return {"data": ActivationChecklistResponse(**checklist).model_dump()}
+    return {"data": ActivationChecklistResponse.model_validate(checklist).model_dump(mode="json")}
 
 
 @router.post("/contracts/{contract_id}/activate")

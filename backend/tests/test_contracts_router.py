@@ -63,7 +63,7 @@ async def test_get_latest_contract_returns_null_when_none(make_token, test_ec_ke
     deal_id = uuid.uuid4()
 
     with (
-        patch("app.routers.contracts.contract_service._get_latest_contract", new=AsyncMock(return_value=None)),
+        patch("app.routers.contracts.contract_service.get_latest_contract", new=AsyncMock(return_value=None)),
         patch("app.core.auth._get_jwks", new=AsyncMock(return_value=test_ec_key["jwks"])),
     ):
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
@@ -73,6 +73,19 @@ async def test_get_latest_contract_returns_null_when_none(make_token, test_ec_ke
             )
     assert res.status_code == 200
     assert res.json()["data"] is None
+
+
+@pytest.mark.anyio
+async def test_activate_contract_forbidden_for_financier(make_token, test_ec_key):
+    token = make_token(sub=str(uuid.uuid4()), active_role="financier")
+
+    with patch("app.core.auth._get_jwks", new=AsyncMock(return_value=test_ec_key["jwks"])):
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+            res = await ac.post(
+                f"/contracts/{uuid.uuid4()}/activate",
+                headers={"Authorization": f"Bearer {token}"},
+            )
+    assert res.status_code == 403
 
 
 @pytest.mark.anyio

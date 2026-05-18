@@ -28,6 +28,10 @@ async def _get_latest_contract(db: AsyncSession, deal_id: uuid.UUID) -> Contract
     return result.scalar_one_or_none()
 
 
+async def get_latest_contract(db: AsyncSession, deal_id: uuid.UUID) -> Contract | None:
+    return await _get_latest_contract(db, deal_id)
+
+
 async def get_contract(db: AsyncSession, contract_id: uuid.UUID) -> Contract:
     result = await db.execute(select(Contract).where(Contract.id == contract_id))
     contract = result.scalar_one_or_none()
