@@ -20,6 +20,8 @@ def _make_pkg(status: str = "draft") -> MagicMock:
     pkg.sent_at = None
     pkg.created_at = datetime.datetime.now(datetime.timezone.utc)
     pkg.updated_at = datetime.datetime.now(datetime.timezone.utc)
+    pkg.company_name = "Acme SAS"
+    pkg.deal_public_id = "DEAL-0001"
     return pkg
 
 
