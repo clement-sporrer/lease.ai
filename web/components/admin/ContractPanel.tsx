@@ -114,6 +114,13 @@ export function ContractPanel({ dealId, dealStatus, contract }: Props) {
                 </span>
               </Row>
             )}
+            {contract.activated_at && (
+              <Row label="Activé le">
+                <span className="text-sm text-teal-700 font-medium">
+                  {new Date(contract.activated_at).toLocaleDateString('fr-FR')}
+                </span>
+              </Row>
+            )}
             {contract.total_commitment_cents != null && (
               <Row label="Engagement total">
                 <span className="font-mono text-sm tabular-nums">
