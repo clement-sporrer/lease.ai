@@ -161,11 +161,6 @@ async def activate(db: AsyncSession, contract_id: uuid.UUID, user_id: str) -> Co
             {"failed_conditions": failed},
         )
 
-    offer_result = await db.execute(
-        select(Offer).where(Offer.deal_id == contract.deal_id, Offer.is_active.is_(True))
-    )
-    offer = offer_result.scalar_one_or_none()  # noqa: F841 — reserved for future use
-
     pricing_result = await db.execute(
         select(PricingProposal)
         .where(PricingProposal.deal_id == contract.deal_id)
@@ -186,21 +181,26 @@ async def activate(db: AsyncSession, contract_id: uuid.UUID, user_id: str) -> Co
     )
     quote = quote_result.scalar_one_or_none()
 
-    if quote:
-        items_result = await db.execute(
-            select(QuoteItem).where(QuoteItem.quote_id == quote.id)
+    if quote is None:
+        raise AppError(
+            409,
+            "QUOTE_MISSING",
+            "No quote found for this deal — cannot create assets",
         )
-        quote_items = list(items_result.scalars().all())
-        for item in quote_items:
-            asset = Asset(
-                id=uuid.uuid4(),
-                contract_id=contract.id,
-                name=item.label,
-                category=item.category,
-                quantity=item.quantity,
-                unit_value_cents=item.unit_price_cents,
-            )
-            db.add(asset)
+    items_result = await db.execute(
+        select(QuoteItem).where(QuoteItem.quote_id == quote.id)
+    )
+    quote_items = list(items_result.scalars().all())
+    for item in quote_items:
+        asset = Asset(
+            id=uuid.uuid4(),
+            contract_id=contract.id,
+            name=item.label,
+            category=item.category,
+            quantity=item.quantity,
+            unit_value_cents=item.unit_price_cents,
+        )
+        db.add(asset)
 
     now = datetime.now(timezone.utc)
     for n in range(1, pricing.duration_months + 1):
@@ -217,6 +217,7 @@ async def activate(db: AsyncSession, contract_id: uuid.UUID, user_id: str) -> Co
     contract.activated_at = now
     contract.status = "active"
 
+    # transition_deal commits internally; second call sees the updated status
     await deal_service.transition_deal(db, contract.deal_id, "activation_pending")
     await deal_service.transition_deal(db, contract.deal_id, "active")
 

@@ -201,6 +201,67 @@ async def test_activation_checklist_partial():
 
 
 @pytest.mark.anyio
+async def test_activate_creates_assets_and_schedule():
+    contract_id = uuid.uuid4()
+    deal_id = uuid.uuid4()
+
+    contract = MagicMock()
+    contract.id = contract_id
+    contract.deal_id = deal_id
+    contract.status = "signed"
+
+    checklist_ok = {
+        "all_satisfied": True,
+        "items": [],
+    }
+
+    pricing = MagicMock()
+    pricing.duration_months = 3
+    pricing.monthly_payment_cents = 50_000
+
+    quote = MagicMock()
+    quote.id = uuid.uuid4()
+
+    item1 = MagicMock()
+    item1.label = "MacBook Pro 14"
+    item1.category = "laptop"
+    item1.quantity = 2
+    item1.unit_price_cents = 200_000
+
+    db = _make_db()
+
+    pricing_result = MagicMock()
+    pricing_result.scalar_one_or_none = MagicMock(return_value=pricing)
+
+    quote_result = MagicMock()
+    quote_result.scalar_one_or_none = MagicMock(return_value=quote)
+
+    items_scalars = MagicMock()
+    items_scalars.all = MagicMock(return_value=[item1])
+    items_result = MagicMock()
+    items_result.scalars = MagicMock(return_value=items_scalars)
+
+    db.execute = AsyncMock(side_effect=[
+        pricing_result,   # PricingProposal query
+        quote_result,     # Quote query
+        items_result,     # QuoteItem query
+    ])
+
+    with (
+        patch("app.services.contract_service.get_contract", new=AsyncMock(return_value=contract)),
+        patch("app.services.contract_service.activation_checklist", new=AsyncMock(return_value=checklist_ok)),
+        patch("app.services.contract_service.deal_service.transition_deal", new=AsyncMock(return_value=contract)),
+    ):
+        result = await contract_service.activate(db, contract_id, str(uuid.uuid4()))
+
+    # 1 asset + 3 schedule entries = 4 add() calls
+    assert db.add.call_count == 4
+    assert contract.total_commitment_cents == 50_000 * 3
+    assert contract.status == "active"
+    assert contract.activated_at is not None
+
+
+@pytest.mark.anyio
 async def test_activate_blocks_when_checklist_not_satisfied():
     contract_id = uuid.uuid4()
     deal_id = uuid.uuid4()
