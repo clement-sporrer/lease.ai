@@ -13,8 +13,8 @@ export const metadata: Metadata = {
   title: "LeaseAI — Back-office",
   description: "Plateforme opérationnelle de gestion de leasing IT",
   icons: {
-    icon: "/icon.svg",
-    apple: "/icon.svg",
+    icon: "/leaseai-icon.png",
+    apple: "/leaseai-icon.png",
   },
 };
 
@@ -34,6 +34,10 @@ export default function RootLayout({
         <link
           rel="stylesheet"
           href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,800,900&display=swap"
+        />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Michroma&display=swap"
         />
       </head>
       <body className="min-h-full flex flex-col">
