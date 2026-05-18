@@ -27,6 +27,7 @@ async def test_get_view_url_returns_url():
 
     with patch("app.services.document_service.httpx") as mock_httpx:
         mock_response = MagicMock()
+        mock_response.status_code = 200
         mock_response.json.return_value = {"signedURL": fake_signed_path}
         mock_client = AsyncMock()
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)

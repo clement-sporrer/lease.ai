@@ -166,16 +166,23 @@ async def get_view_url(db: AsyncSession, document_id: uuid.UUID, actor_role: str
         f"{settings.supabase_url}/storage/v1/object/sign"
         f"/{settings.object_storage_bucket}/{document.storage_key}"
     )
-    async with httpx.AsyncClient() as client:
-        resp = await client.post(
-            sign_url,
-            headers={
-                "Authorization": f"Bearer {settings.supabase_service_role_key}",
-                "apikey": settings.supabase_service_role_key,
-            },
-            json={"expiresIn": 3600},
-        )
-        payload = resp.json()
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.post(
+                sign_url,
+                headers={
+                    "Authorization": f"Bearer {settings.supabase_service_role_key}",
+                    "apikey": settings.supabase_service_role_key,
+                },
+                json={"expiresIn": 3600},
+            )
+    except httpx.RequestError as exc:
+        raise AppError(502, "STORAGE_UNAVAILABLE", f"Could not reach Supabase storage: {exc}")
+
+    if resp.status_code != 200:
+        raise AppError(502, "STORAGE_SIGN_FAILED", f"Supabase storage sign request failed with status {resp.status_code}")
+
+    payload = resp.json()
 
     signed_path: str = payload.get("signedURL") or payload.get("signedUrl") or ""
     if signed_path.startswith("/"):
