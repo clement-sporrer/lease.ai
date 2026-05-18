@@ -150,7 +150,7 @@ export default async function DealReviewPage({ params }: Props) {
         />
         <AuditTimeline events={timeline.data} />
       </div>
-      <ActionPanel dealId={id} token={token} canWrite={userCanWrite} />
+      <ActionPanel dealId={id} canWrite={userCanWrite} />
     </DashboardShell>
   )
 }

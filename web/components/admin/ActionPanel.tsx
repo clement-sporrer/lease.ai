@@ -1,52 +1,41 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
+import { requestDocument, preApproveDeal, rejectDeal } from '@/lib/actions/admin-actions'
 
 interface Props {
   dealId: string
-  token: string
   canWrite: boolean
 }
 
 type Modal = 'request_doc' | 'pre_approve' | 'reject' | null
 
-export function ActionPanel({ dealId, token, canWrite }: Props) {
-  const router = useRouter()
+export function ActionPanel({ dealId, canWrite }: Props) {
+  const [isPending, startTransition] = useTransition()
   const [modal, setModal] = useState<Modal>(null)
-  const [loading, setLoading] = useState(false)
   const [docType, setDocType] = useState('')
   const [reason, setReason] = useState('')
   const [justification, setJustification] = useState('')
 
-  async function post(path: string, body: object) {
-    setLoading(true)
-    try {
-      const res = await fetch(`${API_BASE}${path}`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-      const data = await res.json() as { error?: { message?: string } }
-      if (!res.ok) {
-        toast.error(data?.error?.message ?? `Erreur ${res.status}`)
+  function closeModal() {
+    setModal(null)
+    setDocType('')
+    setReason('')
+    setJustification('')
+  }
+
+  function dispatch(action: () => Promise<{ error?: string }>) {
+    startTransition(async () => {
+      const result = await action()
+      if (result.error) {
+        toast.error(result.error)
       } else {
-        setModal(null)
-        setDocType('')
-        setReason('')
-        setJustification('')
+        closeModal()
         toast.success('Action effectuée avec succès')
-        router.refresh()
       }
-    } catch {
-      toast.error('Erreur réseau — réessayez.')
-    } finally {
-      setLoading(false)
-    }
+    })
   }
 
   if (!canWrite) return null
@@ -82,15 +71,13 @@ export function ActionPanel({ dealId, token, canWrite }: Props) {
               onChange={(e) => setReason(e.target.value)}
             />
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" size="sm" onClick={() => setModal(null)}>
+              <Button variant="ghost" size="sm" onClick={closeModal}>
                 Annuler
               </Button>
               <Button
                 variant="warning"
-                disabled={loading || !docType || !reason}
-                onClick={() =>
-                  post(`/admin/deals/${dealId}/request-document`, { document_type: docType, reason })
-                }
+                disabled={isPending || !docType || !reason}
+                onClick={() => dispatch(() => requestDocument(dealId, docType, reason))}
               >
                 Envoyer
               </Button>
@@ -114,15 +101,13 @@ export function ActionPanel({ dealId, token, canWrite }: Props) {
               onChange={(e) => setJustification(e.target.value)}
             />
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" size="sm" onClick={() => setModal(null)}>
+              <Button variant="ghost" size="sm" onClick={closeModal}>
                 Annuler
               </Button>
               <Button
                 variant="success"
-                disabled={loading}
-                onClick={() =>
-                  post(`/admin/deals/${dealId}/pre-approve`, { justification: justification || null })
-                }
+                disabled={isPending}
+                onClick={() => dispatch(() => preApproveDeal(dealId, justification || null))}
               >
                 Confirmer
               </Button>
@@ -145,13 +130,13 @@ export function ActionPanel({ dealId, token, canWrite }: Props) {
               onChange={(e) => setReason(e.target.value)}
             />
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" size="sm" onClick={() => setModal(null)}>
+              <Button variant="ghost" size="sm" onClick={closeModal}>
                 Annuler
               </Button>
               <Button
                 variant="danger"
-                disabled={loading || !reason}
-                onClick={() => post(`/admin/deals/${dealId}/reject`, { reason })}
+                disabled={isPending || !reason}
+                onClick={() => dispatch(() => rejectDeal(dealId, reason))}
               >
                 Confirmer le refus
               </Button>
