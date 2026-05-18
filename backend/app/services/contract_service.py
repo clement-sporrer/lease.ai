@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime, timezone
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import AppError
@@ -60,12 +61,19 @@ async def generate_contract(db: AsyncSession, deal_id: uuid.UUID, user_id: str) 
         public_id=public_id,
         status="draft",
     )
-    db.add(contract)
-    if deal.status == "firm_offer_generated":
-        await deal_service.transition_deal(db, deal_id, "contract_generated")
-    await db.commit()
-    await db.refresh(contract)
-    return contract
+    try:
+        db.add(contract)
+        if deal.status == "firm_offer_generated":
+            await deal_service.transition_deal(db, deal_id, "contract_generated")
+        await db.commit()
+        await db.refresh(contract)
+        return contract
+    except IntegrityError:
+        await db.rollback()
+        existing = await _get_latest_contract(db, deal_id)
+        if existing is not None:
+            return existing
+        raise AppError(500, "CONTRACT_CREATE_FAILED", "Failed to create contract after concurrent conflict")
 
 
 async def send_signature(db: AsyncSession, contract_id: uuid.UUID, user_id: str) -> Contract:
@@ -154,6 +162,13 @@ async def activation_checklist(db: AsyncSession, contract_id: uuid.UUID) -> dict
 
 async def activate(db: AsyncSession, contract_id: uuid.UUID, user_id: str) -> Contract:
     contract = await get_contract(db, contract_id)
+
+    if contract.status != "signed":
+        raise AppError(
+            409,
+            "INVALID_STATE",
+            f"Contract status is {contract.status!r}, must be signed to activate",
+        )
 
     checklist = await activation_checklist(db, contract_id)
     if not checklist["all_satisfied"]:

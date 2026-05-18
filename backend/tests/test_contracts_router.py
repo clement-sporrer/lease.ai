@@ -89,6 +89,66 @@ async def test_activate_contract_forbidden_for_financier(make_token, test_ec_key
 
 
 @pytest.mark.anyio
+async def test_send_signature_returns_200(make_token, test_ec_key):
+    token = make_token(sub=str(uuid.uuid4()), active_role="admin")
+    contract = _make_contract()
+    contract.status = "sent_for_signature"
+
+    with (
+        patch("app.routers.contracts.contract_service.send_signature", new=AsyncMock(return_value=contract)),
+        patch("app.core.auth._get_jwks", new=AsyncMock(return_value=test_ec_key["jwks"])),
+    ):
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+            res = await ac.post(
+                f"/contracts/{contract.id}/send-signature",
+                headers={"Authorization": f"Bearer {token}"},
+            )
+    assert res.status_code == 200
+    assert res.json()["data"]["status"] == "sent_for_signature"
+
+
+@pytest.mark.anyio
+async def test_mock_sign_returns_200(make_token, test_ec_key):
+    token = make_token(sub=str(uuid.uuid4()), active_role="admin")
+    contract = _make_contract()
+    contract.status = "signed"
+    contract.signed_at = datetime.datetime.now(datetime.timezone.utc)
+
+    with (
+        patch("app.routers.contracts.contract_service.mock_sign", new=AsyncMock(return_value=contract)),
+        patch("app.core.auth._get_jwks", new=AsyncMock(return_value=test_ec_key["jwks"])),
+    ):
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+            res = await ac.post(
+                f"/contracts/{contract.id}/mock-sign",
+                headers={"Authorization": f"Bearer {token}"},
+            )
+    assert res.status_code == 200
+    assert res.json()["data"]["status"] == "signed"
+
+
+@pytest.mark.anyio
+async def test_activate_contract_returns_200(make_token, test_ec_key):
+    token = make_token(sub=str(uuid.uuid4()), active_role="admin")
+    contract = _make_contract()
+    contract.status = "active"
+    contract.activated_at = datetime.datetime.now(datetime.timezone.utc)
+    contract.total_commitment_cents = 120000
+
+    with (
+        patch("app.routers.contracts.contract_service.activate", new=AsyncMock(return_value=contract)),
+        patch("app.core.auth._get_jwks", new=AsyncMock(return_value=test_ec_key["jwks"])),
+    ):
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+            res = await ac.post(
+                f"/contracts/{contract.id}/activate",
+                headers={"Authorization": f"Bearer {token}"},
+            )
+    assert res.status_code == 200
+    assert res.json()["data"]["status"] == "active"
+
+
+@pytest.mark.anyio
 async def test_activation_checklist_returns_200(make_token, test_ec_key):
     token = make_token(sub=str(uuid.uuid4()), active_role="admin")
     contract_id = uuid.uuid4()
