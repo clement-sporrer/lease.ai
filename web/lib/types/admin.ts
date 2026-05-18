@@ -73,7 +73,7 @@ export interface AuditEvent {
 
 export interface QueueResponse {
   data: Deal[]
-  meta: { total: number }
+  meta: { total: number; page: number; page_size: number }
 }
 
 export interface TimelineResponse {
