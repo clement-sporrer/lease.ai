@@ -154,7 +154,12 @@ async def reject_document(
     return document
 
 
-async def get_view_url(db: AsyncSession, document_id: uuid.UUID, actor_role: str) -> dict:
+async def get_view_url(
+    db: AsyncSession,
+    document_id: uuid.UUID,
+    actor_role: str,
+    actor_id: uuid.UUID | None = None,
+) -> dict:
     result = await db.execute(select(Document).where(Document.id == document_id))
     document = result.scalar_one_or_none()
     if document is None:
@@ -174,10 +179,10 @@ async def get_view_url(db: AsyncSession, document_id: uuid.UUID, actor_role: str
                     "Authorization": f"Bearer {settings.supabase_service_role_key}",
                     "apikey": settings.supabase_service_role_key,
                 },
-                json={"expiresIn": 3600},
+                json={"expiresIn": _SIGNED_URL_EXPIRES},
             )
     except httpx.RequestError as exc:
-        raise AppError(502, "STORAGE_UNAVAILABLE", f"Could not reach Supabase storage: {exc}")
+        raise AppError(502, "STORAGE_UNAVAILABLE", "Storage service unavailable") from exc
 
     if resp.status_code != 200:
         raise AppError(502, "STORAGE_SIGN_FAILED", f"Supabase storage sign request failed with status {resp.status_code}")
@@ -190,7 +195,19 @@ async def get_view_url(db: AsyncSession, document_id: uuid.UUID, actor_role: str
     else:
         view_url = signed_path
 
-    return {"url": view_url, "expires_in": 3600}
+    if actor_id is not None:
+        from app.services import audit_service
+
+        await audit_service.log(
+            db=db,
+            deal_id=document.deal_id,
+            actor_id=actor_id,
+            actor_role=actor_role,
+            action="DOCUMENT_VIEWED",
+            payload={"document_id": str(document_id), "document_type": document.type},
+        )
+
+    return {"url": view_url, "expires_in": _SIGNED_URL_EXPIRES}
 
 
 async def confirm_upload_and_maybe_resume_review(

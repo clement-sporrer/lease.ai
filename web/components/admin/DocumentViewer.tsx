@@ -21,7 +21,11 @@ export function DocumentViewerButton({ documentId, fileName }: Props) {
         setError(result.error)
         return
       }
-      setUrl(result.data!.url)
+      if (!result.data?.url) {
+        setError('URL de visualisation indisponible')
+        return
+      }
+      setUrl(result.data.url)
     })
   }
 
