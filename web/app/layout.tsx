@@ -12,6 +12,10 @@ const ibmPlexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "LeaseAI — Back-office",
   description: "Plateforme opérationnelle de gestion de leasing IT",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({

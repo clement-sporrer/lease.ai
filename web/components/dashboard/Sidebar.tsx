@@ -51,9 +51,9 @@ export function Sidebar({ role, items }: SidebarProps) {
 
   return (
     <aside className="w-60 bg-navy-900 min-h-screen flex flex-col">
-      <div className="px-6 py-5 border-b border-white/10">
-        <span className="text-white font-bold text-lg">LeaseAI</span>
-        <span className="ml-2 text-white/40 text-xs">{ROLE_LABELS[role]}</span>
+      <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between">
+        <img src="/logo.svg" alt="LeaseAI" className="h-7 w-auto brightness-0 invert" />
+        <span className="text-white/40 text-xs">{ROLE_LABELS[role]}</span>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1">

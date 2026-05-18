@@ -37,11 +37,8 @@ export default function LoginPage() {
     <main className="flex min-h-screen items-center justify-center bg-gray-50">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <div className="mb-3 inline-flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-[#0D183D] flex items-center justify-center">
-              <span className="text-white text-xs font-bold">L</span>
-            </div>
-            <span className="text-xl font-semibold text-[#0D183D]">LeaseAI</span>
+          <div className="mb-3 flex justify-center">
+            <img src="/logo.svg" alt="LeaseAI" className="h-10 w-auto" />
           </div>
           <p className="text-sm text-gray-500">Plateforme de gestion de leasing IT</p>
         </div>
