@@ -145,3 +145,86 @@ async def test_mock_sign_rejects_non_sent():
             await contract_service.mock_sign(db, contract.id, str(uuid.uuid4()))
 
     assert exc.value.status_code == 409
+
+
+@pytest.mark.anyio
+async def test_activation_checklist_all_satisfied():
+    contract_id = uuid.uuid4()
+    deal_id = uuid.uuid4()
+
+    contract = MagicMock()
+    contract.id = contract_id
+    contract.deal_id = deal_id
+    contract.status = "signed"
+    contract.sent_at = datetime.now(timezone.utc)
+    contract.signed_at = datetime.now(timezone.utc)
+
+    db = _make_db()
+
+    with (
+        patch("app.services.contract_service.get_contract", new=AsyncMock(return_value=contract)),
+        patch("app.services.contract_service._check_financier_decision", new=AsyncMock(return_value=True)),
+        patch("app.services.contract_service._check_active_offer", new=AsyncMock(return_value=True)),
+        patch("app.services.contract_service._check_quote_validated", new=AsyncMock(return_value=True)),
+    ):
+        result = await contract_service.activation_checklist(db, contract_id)
+
+    assert result["all_satisfied"] is True
+    assert all(item["satisfied"] for item in result["items"])
+
+
+@pytest.mark.anyio
+async def test_activation_checklist_partial():
+    contract_id = uuid.uuid4()
+    deal_id = uuid.uuid4()
+
+    contract = MagicMock()
+    contract.id = contract_id
+    contract.deal_id = deal_id
+    contract.status = "draft"
+    contract.sent_at = None
+    contract.signed_at = None
+
+    db = _make_db()
+
+    with (
+        patch("app.services.contract_service.get_contract", new=AsyncMock(return_value=contract)),
+        patch("app.services.contract_service._check_financier_decision", new=AsyncMock(return_value=False)),
+        patch("app.services.contract_service._check_active_offer", new=AsyncMock(return_value=True)),
+        patch("app.services.contract_service._check_quote_validated", new=AsyncMock(return_value=False)),
+    ):
+        result = await contract_service.activation_checklist(db, contract_id)
+
+    assert result["all_satisfied"] is False
+    failed = [item for item in result["items"] if not item["satisfied"]]
+    assert len(failed) >= 3
+
+
+@pytest.mark.anyio
+async def test_activate_blocks_when_checklist_not_satisfied():
+    contract_id = uuid.uuid4()
+    deal_id = uuid.uuid4()
+
+    contract = MagicMock()
+    contract.id = contract_id
+    contract.deal_id = deal_id
+    contract.status = "signed"
+
+    checklist_result = {
+        "all_satisfied": False,
+        "items": [
+            {"key": "contract_signed", "label": "Contrat signé", "satisfied": False},
+        ],
+    }
+
+    db = _make_db()
+
+    with (
+        patch("app.services.contract_service.get_contract", new=AsyncMock(return_value=contract)),
+        patch("app.services.contract_service.activation_checklist", new=AsyncMock(return_value=checklist_result)),
+    ):
+        with pytest.raises(AppError) as exc:
+            await contract_service.activate(db, contract_id, str(uuid.uuid4()))
+
+    assert exc.value.status_code == 400
+    assert exc.value.code == "ACTIVATION_BLOCKED"
